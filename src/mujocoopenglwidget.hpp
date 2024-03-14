@@ -29,9 +29,11 @@ public:
         renderTimer.start();
     }
 
-    explicit MuJoCoOpenGLWidget(mjrContext con, QWidget *parent = nullptr) : QOpenGLWidget(parent), m(nullptr),
-                                                                             d(nullptr),
-                                                                             con(con) {
+    explicit MuJoCoOpenGLWidget(mjvCamera cam, mjvOption opt, mjvScene scn, mjrContext con, QWidget *parent = nullptr)
+            : QOpenGLWidget(parent), m(nullptr),
+              d(nullptr), cam(cam), opt(opt), scn(scn),
+              con(con) {
+
         // Initialize the render timer
         renderTimer.setInterval(MSEC_PER_FRAME);
         connect(&renderTimer, &QTimer::timeout, this, [this]() {
@@ -85,8 +87,8 @@ public slots:
 
         // Reinitialize the camera, options, and scene for the new model
         mjv_defaultFreeCamera(m, &cam);
-        mjv_defaultOption(&opt);
-        mjv_makeScene(m, &scn, MAX_GEOM); // Allocate scene
+
+        initializeGL();
 
         // Trigger a redraw to reflect the new model
         update();
