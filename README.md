@@ -20,6 +20,12 @@ cmake ../ -DCMAKE_PREFIX_PATH:PATH="path/to/mujoco;path/to/qt"
 cmake --build . --config Release
 ```
 
+## Design
+
+One thread is dedicated to simulation.
+
+
+
 ## Reference
 
 https://gist.github.com/JeanElsner/755d0feb49864ecadab4ef00fd49a22b

@@ -44,3 +44,11 @@ target_link_libraries(mujoco_simulation_qt PRIVATE
         Qt6::OpenGLWidgets
         ${MUJOCO_LIBRARY}
 )
+
+enable_testing()
+
+# Assuming Catch2 is a submodule or already present in your project
+add_subdirectory(Catch2)
+
+# Add test subdirectory
+add_subdirectory(test)
