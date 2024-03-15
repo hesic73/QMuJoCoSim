@@ -7,6 +7,11 @@
 #include <QTimer>
 #include <QElapsedTimer>
 #include <QMutex>
+#include <QList>
+#include <QDragEnterEvent>
+#include <QMimeData>
+#include <QUrl>
+#include <QFileInfo>
 
 static constexpr int MAX_GEOM = 2000;
 static constexpr int FPS = 60;
@@ -27,6 +32,8 @@ public:
             update(); // Schedule a new frame for rendering
         });
         renderTimer.start();
+
+        setAcceptDrops(true);
     }
 
     explicit MuJoCoOpenGLWidget(mjvCamera cam, mjvOption opt, mjvScene scn, mjrContext con, QWidget *parent = nullptr)
@@ -40,6 +47,8 @@ public:
             update();
         });
         renderTimer.start();
+
+        setAcceptDrops(true);
     }
 
     ~MuJoCoOpenGLWidget() override {
@@ -114,6 +123,35 @@ protected:
 
     void resizeGL(int w, int h) override {
         // Update viewport here if necessary
+    }
+
+    void dragEnterEvent(QDragEnterEvent *event) override {
+        if (event->mimeData()->hasUrls()) {
+            QList<QUrl> urls = event->mimeData()->urls();
+            for (const QUrl &url: urls) {
+                QString filePath = url.toLocalFile();
+                QFileInfo fileInfo = QFileInfo(filePath);
+                if (fileInfo.suffix().compare("xml", Qt::CaseInsensitive) != 0) {
+                    // Not an xml file, ignore it
+                    event->ignore();
+                    return;
+                }
+            }
+            event->acceptProposedAction();
+        } else {
+            event->ignore();
+        }
+    }
+
+    void dropEvent(QDropEvent *event) override {
+        const QMimeData *mimeData = event->mimeData();
+
+        if (mimeData->hasUrls()) {
+            QUrl url = mimeData->urls().first();
+            QString filePath = url.toLocalFile();
+            loadModel(filePath);
+            event->acceptProposedAction();
+        }
     }
 
 private:
