@@ -16,16 +16,25 @@ A simple mujoco simulation application in Qt.
 
 ```bash
 mkdir -p build && cd build
-cmake ../ -DCMAKE_PREFIX_PATH:PATH="path/to/mujoco;path/to/qt"
+cmake ../ -DCMAKE_PREFIX_PATH:PATH="path/to/mujoco;path/to/qt/library"
 cmake --build . --config Release
 ```
 
-## Design
+## To-Do List
 
-One thread is dedicated to simulation.
+- [x] drag and drop
+- [ ] shortcuts
+- [ ] add text when paused
+- [x] screenshot
+- [ ] camera control
+- [ ] OpenGL Effects
 
+## Known Issues
 
+- Currently, the rendering operates at a constant FPS, based on the presumption that **the simulation outpaces real-time**. Should this not be the case, the program could become overloaded. Implementing buffer strategies might be a potential solution.
 
 ## Reference
 
 https://gist.github.com/JeanElsner/755d0feb49864ecadab4ef00fd49a22b
+
+https://github.com/google-deepmind/mujoco/tree/main/simulate

@@ -5,6 +5,9 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QMenuBar>
+#include <QPixmap>
+#include <QStandardPaths>
+#include <QImageWriter>
 
 #include "mujocoopenglwidget.hpp"
 
@@ -12,7 +15,7 @@ class MainWindow : public QMainWindow {
 Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr) : QMainWindow(parent) {
+    explicit MainWindow(QWidget *parent = nullptr) : QMainWindow(parent) {
 
 
         mjvCamera cam; // MuJoCo camera
@@ -25,22 +28,31 @@ public:
         mjv_defaultScene(&scn);
         mjv_makeScene(nullptr, &scn, MAX_GEOM); // Allocate scene
 
-        auto *widget = new MuJoCoOpenGLWidget(cam, opt, scn, con,
-                                              this);
-        setCentralWidget(widget);
+        muJoCoOpenGlWidget = new MuJoCoOpenGLWidget(cam, opt, scn, con,
+                                                    this);
+        setCentralWidget(muJoCoOpenGlWidget);
 
         auto *openAction = new QAction("&Open", this);
-        connect(openAction, &QAction::triggered, [widget, this]() {
+        connect(openAction, &QAction::triggered, [this]() {
             QString defaultDir = QDir::currentPath(); // Get the current working directory
-            QString fileName = QFileDialog::getOpenFileName(this, "Open Model File", defaultDir, "Model Files (*.xml *.mjb)");
+            QString fileName = QFileDialog::getOpenFileName(this, "Open Model File", defaultDir,
+                                                            "Model Files (*.xml *.mjb)");
             if (fileName.isEmpty()) {
                 return;
             }
-            widget->loadModel(fileName);
+            muJoCoOpenGlWidget->loadModel(fileName);
         });
+
+        auto *screenshotAction = new QAction("Screenshot", this);
+        connect(screenshotAction, &QAction::triggered, [this]() {
+            shootScreen();
+        });
+
 
         auto *fileMenu = menuBar()->addMenu("&File");
         fileMenu->addAction(openAction);
+        fileMenu->addSeparator();
+        fileMenu->addAction(screenshotAction);
 
         // Simulation menu
         auto *simulationMenu = menuBar()->addMenu("&Simulation");
@@ -49,16 +61,41 @@ public:
         auto *pauseAction = new QAction("&Pause", this);
         pauseAction->setCheckable(true);
         simulationMenu->addAction(pauseAction);
-        connect(pauseAction, &QAction::triggered, widget, [widget, pauseAction]() {
-            widget->pauseSimulation(pauseAction->isChecked());
+        connect(pauseAction, &QAction::triggered, muJoCoOpenGlWidget, [this, pauseAction]() {
+            muJoCoOpenGlWidget->pauseSimulation(pauseAction->isChecked());
         });
 
         // Reset action
         auto *resetAction = new QAction("&Reset", this);
         simulationMenu->addAction(resetAction);
-        connect(resetAction, &QAction::triggered, widget, &MuJoCoOpenGLWidget::resetSimulation);
+        connect(resetAction, &QAction::triggered, muJoCoOpenGlWidget, &MuJoCoOpenGLWidget::resetSimulation);
     }
 
+private slots:
+
+    void shootScreen() {
+        auto pixmap = muJoCoOpenGlWidget->grab();
+        QString path = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+        if (path.isEmpty())
+            path = QDir::currentPath();
+
+        // Get current date and time
+        QDateTime now = QDateTime::currentDateTime();
+        // Format date and time to string with desired format
+        QString dateTimeString = now.toString("yyyy_MM_dd_hh_mm_ss_zzz");
+
+        // Append formatted date and time to filename
+        path += QString("/screenshot_%1.png").arg(dateTimeString);
+        if (!pixmap.save(path)) {
+            QMessageBox::warning(this, tr("Save Error"), tr("The image could not be saved to \"%1\".")
+                    .arg(QDir::toNativeSeparators(path)));
+        } else {
+            qDebug() << "Screenshot saved to" << QDir::toNativeSeparators(path);
+        }
+    };
+
+private:
+    MuJoCoOpenGLWidget *muJoCoOpenGlWidget;
 };
 
 #endif //MUJOCO_SIMULATION_QT_MAINWINDOW_H
