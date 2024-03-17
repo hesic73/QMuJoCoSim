@@ -18,17 +18,20 @@ public:
     explicit MainWindow(QWidget *parent = nullptr) : QMainWindow(parent) {
 
 
-        mjvCamera cam; // MuJoCo camera
-        mjvOption opt; // Visualization options
-        mjvScene scn; // Scene for rendering
+        mjvCamera cam;
+        mjvOption opt;
+        mjvPerturb pert;
         mjrContext con; // Rendering context
 
+        mjv_defaultCamera(&cam);
         mjv_defaultOption(&opt);
-        mjr_defaultContext(&con);
-        mjv_defaultScene(&scn);
-        mjv_makeScene(nullptr, &scn, MAX_GEOM); // Allocate scene
+        mjv_defaultPerturb(&pert);
 
-        muJoCoOpenGlWidget = new MuJoCoOpenGLWidget(cam, opt, scn, con,
+        // it's crucial to initialize the context before we create the widget (but I don't know why).
+        mjr_defaultContext(&con);
+
+
+        muJoCoOpenGlWidget = new MuJoCoOpenGLWidget(cam, opt, pert, con,
                                                     this);
         setCentralWidget(muJoCoOpenGlWidget);
 

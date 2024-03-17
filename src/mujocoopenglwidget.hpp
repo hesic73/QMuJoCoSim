@@ -30,34 +30,21 @@ Q_OBJECT
 
 public:
     /**
-     * All structs are trivially-copiable (although it's a bit expensive).
+     * All structs are trivially-copiable (although copying is a bit expensive).
      */
-    MuJoCoOpenGLWidget(mjModel *m, mjData *d, mjvCamera cam, mjvOption opt, mjvScene scn, mjrContext con,
-                       QWidget *parent = nullptr, int fps = 60) : QOpenGLWidget(parent),
-                                                                  simulationWorker(m, d, fps),
-                                                                  cam(cam),
-                                                                  opt(opt),
-                                                                  scn(scn),
-                                                                  con(con) {
-
-        simulationThread = std::thread([&]() { simulationWorker.startSimulationLoop(); });
-        renderTimer.setInterval(1000 / fps);
-        connect(&renderTimer, &QTimer::timeout, this, [this]() {
-            update(); // Schedule a new frame for rendering
-        });
-        renderTimer.start();
-
-        setAcceptDrops(true);
-    }
-
-    explicit MuJoCoOpenGLWidget(mjvCamera cam, mjvOption opt, mjvScene scn, mjrContext con, QWidget *parent = nullptr,
+    explicit MuJoCoOpenGLWidget(mjvCamera cam, mjvOption opt, mjvPerturb pert, mjrContext con,
+                                QWidget *parent = nullptr,
                                 int fps = 60)
             : QOpenGLWidget(parent),
               simulationWorker(nullptr, nullptr, fps),
               cam(cam),
               opt(opt),
-              scn(scn),
+              pert(pert),
               con(con) {
+
+        mjv_defaultScene(&scn);
+        mjv_makeScene(nullptr, &scn, MAX_GEOM); // Allocate scene
+
 
         // Initialize the render timer
         renderTimer.setInterval(1000 / fps);
@@ -88,21 +75,37 @@ public slots:
     }
 
     void loadModel(const QString &filename) {
+        isLoading = true;
+
+        // std::this_thread::sleep_for(std::chrono::milliseconds{1000});
+
         // Attempt to load the new model first without altering the current state
         char error[1000] = "Could not load binary model";
         mjModel *newModel = mj_loadXML(filename.toStdString().c_str(), nullptr, error, sizeof(error));
         if (!newModel) {
+            load_error = error;
             qCritical() << "Load model error:" << error;
-            QMessageBox::critical(this, "Error", "Could not load the model.");
+            isLoading = false;
             return; // Return without changing the current model and data
         }
+        load_error.clear();
 
-        simulationWorker.replace(newModel, &cam);
+        mjv_makeScene(newModel, &scn, MAX_GEOM); // Allocate scene
+
+
+        simulationWorker.replace(newModel);
         if (!simulationThread.joinable()) {
             simulationThread = std::thread([&]() { simulationWorker.startSimulationLoop(); });
         }
 
+        mjv_defaultCamera(&cam);
+
+
+        isLoading = false;
+
         initializeGL();
+
+
 
         // Trigger a redraw to reflect the new model
         update();
@@ -115,15 +118,39 @@ protected:
     }
 
     void paintGL() override {
+        mjrRect viewport = {0, 0, static_cast<int>(width() * devicePixelRatio()),
+                            static_cast<int>(height() * devicePixelRatio())};
+
+
         if (simulationWorker.isModelDataNull()) {
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            mjr_rectangle(viewport, 0.2f, 0.3f, 0.4f, 1);
+
+            // Currently, `loadModel` executes in the main loop, rendering the loading flag unused.
+            // Moving `loadModel` to a separate thread triggers an error: "ERROR: Could not allocate offscreen framebuffer".
+            if (isLoading) {
+                mjr_overlay(mjFONT_BIG, mjGRID_TOP, viewport, "LOADING...", nullptr,
+                            &con);
+            } else {
+                QString info = QString("MuJoCo version %1\nDrag-and-drop model file here").arg(mj_versionString());
+                mjr_overlay(mjFONT_NORMAL, mjGRID_TOPLEFT, viewport, info.toStdString().c_str(), nullptr,
+                            &con);
+            }
+
+            if (!load_error.isEmpty()) {
+                mjr_overlay(mjFONT_NORMAL, mjGRID_BOTTOMLEFT, viewport, load_error.toStdString().c_str(), nullptr,
+                            &con);
+            }
+
             return;
         }
 
         simulationWorker.updateScene(&opt, &cam, &scn);
-        mjrRect viewport = {0, 0, static_cast<int>(width() * devicePixelRatio()),
-                            static_cast<int>(height() * devicePixelRatio())};
         mjr_render(viewport, &scn, &con);
+
+        if (simulationWorker.isPaused()) {
+            mjr_overlay(mjFONT_BIG, mjGRID_TOP, viewport, "PAUSE", nullptr,
+                        &con);
+        }
     }
 
 
@@ -166,12 +193,17 @@ private:
 
     mjvCamera cam; // MuJoCo camera
     mjvOption opt; // Visualization options
+    mjvPerturb pert;
     mjvScene scn; // Scene for rendering
     mjrContext con; // Rendering context
 
     QTimer renderTimer;
 
     std::thread simulationThread;
+
+
+    std::atomic_bool isLoading = false;
+    QString load_error;
 };
 
 #endif //MUJOCO_SIMULATION_QT_MUJOCOOPENGLWIDGET_HPP

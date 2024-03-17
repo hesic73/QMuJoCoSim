@@ -2,6 +2,16 @@
 #include <QSurfaceFormat>
 #include "mainwindow.hpp"
 
+#include "mujoco/mujoco.h"
+#include <iostream>
+
+static void check_mujoco_version() {
+    std::cout << "MuJoCo version " << mj_versionString() << std::endl;
+    if (mjVERSION_HEADER!=mj_version()) {
+        mju_error("Headers and library have different versions");
+    }
+}
+
 
 static void set_surface_format() {
     QSurfaceFormat format;
@@ -19,6 +29,8 @@ static void set_surface_format() {
 }
 
 int main(int argc, char *argv[]) {
+    check_mujoco_version();
+
     set_surface_format();
 
     QApplication app(argc, argv);

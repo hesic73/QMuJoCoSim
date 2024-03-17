@@ -96,14 +96,15 @@ public:
         return m == nullptr || d == nullptr;
     }
 
-    void replace(mjModel *newModel, mjvCamera *cam = nullptr) {
+    // While access to `isSimulationPaused` is not thread-safe,
+    // its simple boolean nature minimizes the risk of serious concurrency issues.
+    bool isPaused() const { return isSimulationPaused; }
+
+    void replace(mjModel *newModel) {
         std::lock_guard<std::mutex> lockGuard(mtx);
         cleanup();
         m = newModel;
         d = mj_makeData(m);
-        if (cam) {
-            mjv_defaultFreeCamera(m, cam);
-        }
     }
 
 private:

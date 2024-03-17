@@ -23,9 +23,9 @@ cmake --build . --config Release
 ## To-Do List
 
 - [x] drag and drop
-- [ ] shortcuts
-- [ ] add text when paused
 - [x] screenshot
+- [ ] add text when paused
+- [ ] shortcuts
 - [ ] camera control
 - [ ] OpenGL Effects
 
