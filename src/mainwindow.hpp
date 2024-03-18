@@ -49,9 +49,28 @@ public:
             muJoCoOpenGlWindow->loadModel(fileName);
         });
 
-        auto *screenshotAction = new QAction("Screenshot", this);
+        screenshotAction = new QAction("Screenshot", this);
         connect(screenshotAction, &QAction::triggered, [this]() {
             shootScreen();
+        });
+
+        saveXMLAction = new QAction("Save XML", this);
+        connect(saveXMLAction, &QAction::triggered, [this]() {
+            auto dirPath = QDir::currentPath();// to do: configure the output directory
+            auto dir = QDir(dirPath);
+            auto fullPath = dir.filePath("mjmodel.xml");
+            qDebug() << QString("Attempting to save the model in XML format to the following path: '%1'").arg(fullPath);
+            muJoCoOpenGlWindow->saveXML(fullPath);
+        });
+
+
+        saveMJBAction = new QAction("Save MJB", this);
+        connect(saveMJBAction, &QAction::triggered, [this]() {
+            auto dirPath = QDir::currentPath();// to do: configure the output directory
+            auto dir = QDir(dirPath);
+            auto fullPath = dir.filePath("mjmodel.mjb");
+            qDebug() << QString("Attempting to save the model in MJB format to the following path: '%1'").arg(fullPath);
+            muJoCoOpenGlWindow->saveMJB(fullPath);
         });
 
 
@@ -59,6 +78,8 @@ public:
         fileMenu->addAction(openAction);
         fileMenu->addSeparator();
         fileMenu->addAction(screenshotAction);
+        fileMenu->addAction(saveXMLAction);
+        fileMenu->addAction(saveMJBAction);
 
         // Simulation menu
         auto *simulationMenu = menuBar()->addMenu("&Simulation");
@@ -108,6 +129,10 @@ protected:
 
 private:
     MuJoCoOpenGLWindow *muJoCoOpenGlWindow;
+
+    QAction *screenshotAction;
+    QAction *saveXMLAction;
+    QAction *saveMJBAction;
 };
 
 #endif //MUJOCO_SIMULATION_QT_MAINWINDOW_H

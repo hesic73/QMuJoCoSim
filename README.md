@@ -25,13 +25,13 @@ cmake --build . --config Release
 ### Improvements
 
 - [ ] Revise simulation and rendering synchronization: the simulation thread scheduled at 60 FPS, triggering the rendering process immediately upon each simulation cycle's completion.
+- [ ] Configure directory to save screenshots, models
 
 ### Features
 
 - [x] drag and drop
 - [x] screenshot
-
-- [x] add text when paused
+- [ ] support both XML and MJB
 - [ ] camera control
 - [ ] toggle OpenGL effects
 - [ ] shortcuts

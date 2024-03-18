@@ -18,6 +18,7 @@
 #include <QtLogging>
 
 #include <memory>
+#include <cstring>
 
 
 #include "simulation_worker.hpp"
@@ -77,13 +78,27 @@ public slots:
     }
 
     void loadModel(const QString &filename) {
+        mjModel *newModel = nullptr;
+
         isLoading = true;
 
         // std::this_thread::sleep_for(std::chrono::milliseconds{1000});
 
         // Attempt to load the new model first without altering the current state
         char error[1000] = "Could not load binary model";
-        mjModel *newModel = mj_loadXML(filename.toStdString().c_str(), nullptr, error, sizeof(error));
+        QFileInfo fileInfo = QFileInfo(filename);
+        if (fileInfo.suffix().compare("xml", Qt::CaseInsensitive) == 0) {
+            newModel = mj_loadXML(filename.toStdString().c_str(), nullptr, error, sizeof(error));
+        } else if (fileInfo.suffix().compare("mjb", Qt::CaseInsensitive) == 0) {
+            newModel = mj_loadModel(filename.toStdString().c_str(), nullptr);
+        } else {
+            qWarning()
+                    << "loadModel method supports only '.xml' and '.mjb' file formats. The provided file path does not match these formats.";
+
+            std::strcpy(error,
+                        "loadModel method supports only '.xml' and '.mjb' file formats. The provided file path does not match these formats.");
+        }
+
         if (!newModel) {
             load_error = error;
             qCritical() << "Load model error:" << error;
@@ -112,6 +127,13 @@ public slots:
         update();
     }
 
+    void saveXML(const QString &filename) {
+        simulationWorker.save_xml(filename.toStdString());
+    }
+
+    void saveMJB(const QString &filename) {
+        simulationWorker.save_mjb(filename.toStdString());
+    }
 
 protected:
     void initializeGL() override {

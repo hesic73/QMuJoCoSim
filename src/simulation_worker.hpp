@@ -107,6 +107,27 @@ public:
         d = mj_makeData(m);
     }
 
+    void save_xml(const std::string &filename) {
+        std::lock_guard<std::mutex> lockGuard(mtx);
+        if (m == nullptr) {
+            std::cout << "Skipping save operation: 'm' is not initialized (nullptr)." << std::endl;
+            return;
+        }
+        char err[200] = {0};
+        if (mj_saveLastXML(filename.c_str(), m, err, 200) == 0) {
+            std::cout << "Save XML error: " << err << std::endl;
+        }
+    }
+
+    void save_mjb(const std::string &filename) {
+        std::lock_guard<std::mutex> lockGuard(mtx);
+        if (m == nullptr) {
+            std::cout << "Skipping save operation: 'm' is not initialized (nullptr)." << std::endl;
+            return;
+        }
+        mj_saveModel(m, filename.c_str(), nullptr, 0);
+    }
+
 private:
     void cleanup() {
         if (d) {

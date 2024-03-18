@@ -34,8 +34,9 @@ protected:
             for (const QUrl &url: urls) {
                 QString filePath = url.toLocalFile();
                 QFileInfo fileInfo = QFileInfo(filePath);
-                if (fileInfo.suffix().compare("xml", Qt::CaseInsensitive) != 0) {
-                    // Not an xml file, ignore it
+                if (fileInfo.suffix().compare("xml", Qt::CaseInsensitive) != 0 &&
+                    fileInfo.suffix().compare("mjb", Qt::CaseInsensitive) != 0) {
+                    // Not an xml or mjb file, ignore it
                     event->ignore();
                     return;
                 }
