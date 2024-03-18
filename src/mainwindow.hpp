@@ -81,23 +81,36 @@ public:
         fileMenu->addAction(saveXMLAction);
         fileMenu->addAction(saveMJBAction);
 
+        fileMenu->setStyleSheet("QMenu::item:disabled { background-color: #f0f0f0; color: #a0a0a0; }");
+
+
         // Simulation menu
         auto *simulationMenu = menuBar()->addMenu("&Simulation");
+        simulationMenu->setStyleSheet("QMenu::item:disabled { background-color: #f0f0f0; color: #a0a0a0; }");
 
         // Pause action
-        auto *pauseAction = new QAction("&Pause", this);
+        pauseAction = new QAction("&Pause", this);
         pauseAction->setCheckable(true);
         simulationMenu->addAction(pauseAction);
-        connect(pauseAction, &QAction::triggered, muJoCoOpenGlWindow, [this, pauseAction]() {
+        connect(pauseAction, &QAction::triggered, muJoCoOpenGlWindow, [this]() {
             muJoCoOpenGlWindow->pauseSimulation(pauseAction->isChecked());
         });
 
         // Reset action
-        auto *resetAction = new QAction("&Reset", this);
+        resetAction = new QAction("&Reset", this);
         simulationMenu->addAction(resetAction);
         connect(resetAction, &QAction::triggered, muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::resetSimulation);\
 
-        setAcceptDrops(true);
+
+        connect(muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::loadModelSuccess, [this]() {
+            enableActions();
+        });
+
+        connect(muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::loadModelFailure, [this]() {
+            disableActions();
+        });
+
+        disableActions();
     }
 
 private slots:
@@ -128,11 +141,32 @@ private slots:
 protected:
 
 private:
+    void disableActions() {
+        screenshotAction->setEnabled(false);
+        saveXMLAction->setEnabled(false);
+        saveMJBAction->setEnabled(false);
+
+        pauseAction->setEnabled(false);
+        resetAction->setEnabled(false);
+    }
+
+    void enableActions() {
+        screenshotAction->setEnabled(true);
+        saveXMLAction->setEnabled(true);
+        saveMJBAction->setEnabled(true);
+
+        pauseAction->setEnabled(true);
+        resetAction->setEnabled(true);
+    }
+
     MuJoCoOpenGLWindow *muJoCoOpenGlWindow;
 
     QAction *screenshotAction;
     QAction *saveXMLAction;
     QAction *saveMJBAction;
+
+    QAction *pauseAction;
+    QAction *resetAction;
 };
 
 #endif //MUJOCO_SIMULATION_QT_MAINWINDOW_H

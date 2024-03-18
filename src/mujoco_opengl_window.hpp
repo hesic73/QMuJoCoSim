@@ -103,6 +103,7 @@ public slots:
             load_error = error;
             qCritical() << "Load model error:" << error;
             isLoading = false;
+            emit loadModelFailure();
             return; // Return without changing the current model and data
         }
         load_error.clear();
@@ -123,8 +124,12 @@ public slots:
         initializeGL();
 
 
+        emit loadModelSuccess();
+
         // Trigger a redraw to reflect the new model
         update();
+
+        return;
     }
 
     void saveXML(const QString &filename) {
@@ -134,6 +139,12 @@ public slots:
     void saveMJB(const QString &filename) {
         simulationWorker.save_mjb(filename.toStdString());
     }
+
+signals:
+
+    void loadModelSuccess();
+
+    void loadModelFailure();
 
 protected:
     void initializeGL() override {

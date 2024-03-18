@@ -31,9 +31,12 @@ cmake --build . --config Release
 
 - [x] drag and drop
 - [x] screenshot
-- [ ] support both XML and MJB
+- [x] support both XML and MJB
+- [ ] disable actions when mjModel is null.
+- [ ] close simulation (free mjModel/mjData and terminate the simulation thread)
+- [ ] quit
 - [ ] camera control
-- [ ] toggle OpenGL effects
+- [ ] toggle scn.flags (shadow, reflection, etc)
 - [ ] shortcuts
 
 ## Known Issues
