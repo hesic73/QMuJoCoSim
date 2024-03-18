@@ -22,12 +22,19 @@ cmake --build . --config Release
 
 ## To-Do List
 
+### Improvements
+
+- [ ] Revise simulation and rendering synchronization: the simulation thread scheduled at 60 FPS, triggering the rendering process immediately upon each simulation cycle's completion.
+
+### Features
+
 - [x] drag and drop
 - [x] screenshot
-- [ ] add text when paused
-- [ ] shortcuts
+
+- [x] add text when paused
 - [ ] camera control
-- [ ] OpenGL Effects
+- [ ] toggle OpenGL effects
+- [ ] shortcuts
 
 ## Known Issues
 
@@ -38,3 +45,4 @@ cmake --build . --config Release
 https://gist.github.com/JeanElsner/755d0feb49864ecadab4ef00fd49a22b
 
 https://github.com/google-deepmind/mujoco/tree/main/simulate
+

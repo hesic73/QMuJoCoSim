@@ -8,8 +8,11 @@
 #include <QPixmap>
 #include <QStandardPaths>
 #include <QImageWriter>
+#include <QGuiApplication>
+#include <QScreen>
 
-#include "mujocoopenglwidget.hpp"
+#include "mujoco_opengl_window.hpp"
+#include "my_window_container.hpp"
 
 class MainWindow : public QMainWindow {
 Q_OBJECT
@@ -31,9 +34,9 @@ public:
         mjr_defaultContext(&con);
 
 
-        muJoCoOpenGlWidget = new MuJoCoOpenGLWidget(cam, opt, pert, con,
+        muJoCoOpenGlWindow = new MuJoCoOpenGLWindow(cam, opt, pert, con,
                                                     this);
-        setCentralWidget(muJoCoOpenGlWidget);
+        setCentralWidget(new MyWindowContainer(muJoCoOpenGlWindow));
 
         auto *openAction = new QAction("&Open", this);
         connect(openAction, &QAction::triggered, [this]() {
@@ -43,7 +46,7 @@ public:
             if (fileName.isEmpty()) {
                 return;
             }
-            muJoCoOpenGlWidget->loadModel(fileName);
+            muJoCoOpenGlWindow->loadModel(fileName);
         });
 
         auto *screenshotAction = new QAction("Screenshot", this);
@@ -64,20 +67,23 @@ public:
         auto *pauseAction = new QAction("&Pause", this);
         pauseAction->setCheckable(true);
         simulationMenu->addAction(pauseAction);
-        connect(pauseAction, &QAction::triggered, muJoCoOpenGlWidget, [this, pauseAction]() {
-            muJoCoOpenGlWidget->pauseSimulation(pauseAction->isChecked());
+        connect(pauseAction, &QAction::triggered, muJoCoOpenGlWindow, [this, pauseAction]() {
+            muJoCoOpenGlWindow->pauseSimulation(pauseAction->isChecked());
         });
 
         // Reset action
         auto *resetAction = new QAction("&Reset", this);
         simulationMenu->addAction(resetAction);
-        connect(resetAction, &QAction::triggered, muJoCoOpenGlWidget, &MuJoCoOpenGLWidget::resetSimulation);
+        connect(resetAction, &QAction::triggered, muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::resetSimulation);\
+
+        setAcceptDrops(true);
     }
 
 private slots:
 
     void shootScreen() {
-        auto pixmap = muJoCoOpenGlWidget->grab();
+        QScreen *screen = QGuiApplication::primaryScreen();
+        QPixmap pixmap = screen->grabWindow(muJoCoOpenGlWindow->winId());
         QString path = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
         if (path.isEmpty())
             path = QDir::currentPath();
@@ -97,8 +103,11 @@ private slots:
         }
     };
 
+
+protected:
+
 private:
-    MuJoCoOpenGLWidget *muJoCoOpenGlWidget;
+    MuJoCoOpenGLWindow *muJoCoOpenGlWindow;
 };
 
 #endif //MUJOCO_SIMULATION_QT_MAINWINDOW_H

@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <QSurfaceFormat>
+#include <QColorSpace>
 #include "mainwindow.hpp"
 
 #include "mujoco/mujoco.h"
@@ -7,7 +8,7 @@
 
 static void check_mujoco_version() {
     std::cout << "MuJoCo version " << mj_versionString() << std::endl;
-    if (mjVERSION_HEADER!=mj_version()) {
+    if (mjVERSION_HEADER != mj_version()) {
         mju_error("Headers and library have different versions");
     }
 }
@@ -23,6 +24,7 @@ static void set_surface_format() {
     format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
     format.setVersion(2, 0);
 
+    format.setColorSpace(QColorSpace::SRgb);
     format.setRenderableType(QSurfaceFormat::OpenGL);
     format.setProfile(QSurfaceFormat::CompatibilityProfile);
     QSurfaceFormat::setDefaultFormat(format);

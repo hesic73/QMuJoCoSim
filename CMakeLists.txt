@@ -33,7 +33,8 @@ qt_standard_project_setup()
 qt_add_executable(mujoco_simulation_qt
         src/main.cpp
         src/mainwindow.hpp
-        src/mujocoopenglwidget.hpp
+        src/mujoco_opengl_window.hpp
+        src/my_window_container.hpp
 )
 
 target_link_libraries(mujoco_simulation_qt PRIVATE

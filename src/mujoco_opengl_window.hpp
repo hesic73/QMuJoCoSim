@@ -1,7 +1,7 @@
-#ifndef MUJOCO_SIMULATION_QT_MUJOCOOPENGLWIDGET_HPP
-#define MUJOCO_SIMULATION_QT_MUJOCOOPENGLWIDGET_HPP
+#ifndef MUJOCO_SIMULATION_QT_MUJOCO_OPENGL_WINDOW_HPP
+#define MUJOCO_SIMULATION_QT_MUJOCO_OPENGL_WINDOW_HPP
 
-#include <QOpenGLWidget>
+#include <QOpenGLWindow>
 #include <mujoco/mujoco.h>
 #include <QMessageBox>
 #include <QTimer>
@@ -10,11 +10,10 @@
 #include <QWaitCondition>
 #include <QElapsedTimer>
 #include <QThread>
-#include <QList>
-#include <QDragEnterEvent>
-#include <QMimeData>
-#include <QUrl>
-#include <QFileInfo>
+
+
+#include <QOpenGLFunctions>
+#include <QOpenGLContext>
 
 #include <QtLogging>
 
@@ -25,17 +24,17 @@
 
 static constexpr int MAX_GEOM = 2000;
 
-class MuJoCoOpenGLWidget : public QOpenGLWidget {
+class MuJoCoOpenGLWindow : public QOpenGLWindow {
 Q_OBJECT
 
 public:
     /**
      * All structs are trivially-copiable (although copying is a bit expensive).
      */
-    explicit MuJoCoOpenGLWidget(mjvCamera cam, mjvOption opt, mjvPerturb pert, mjrContext con,
+    explicit MuJoCoOpenGLWindow(mjvCamera cam, mjvOption opt, mjvPerturb pert, mjrContext con,
                                 QWidget *parent = nullptr,
                                 int fps = 60)
-            : QOpenGLWidget(parent),
+            : QOpenGLWindow(),
               simulationWorker(nullptr, nullptr, fps),
               cam(cam),
               opt(opt),
@@ -53,14 +52,17 @@ public:
         });
         renderTimer.start();
 
-        setAcceptDrops(true);
+        // setAcceptDrops(true);
     }
 
-    ~MuJoCoOpenGLWidget() override {
+    ~MuJoCoOpenGLWindow() override {
         simulationWorker.terminateSimulation();
         if (simulationThread.joinable()) {
             simulationThread.join();
         }
+
+        mjv_freeScene(&scn);
+        mjr_freeContext(&con);
     }
 
 public slots:
@@ -106,7 +108,6 @@ public slots:
         initializeGL();
 
 
-
         // Trigger a redraw to reflect the new model
         update();
     }
@@ -118,6 +119,11 @@ protected:
     }
 
     void paintGL() override {
+
+        auto f = QOpenGLContext::currentContext()->functions();
+        Q_ASSERT(f->hasOpenGLFeature(QOpenGLFunctions::OpenGLFeature::FixedFunctionPipeline));
+
+
         mjrRect viewport = {0, 0, static_cast<int>(width() * devicePixelRatio()),
                             static_cast<int>(height() * devicePixelRatio())};
 
@@ -144,6 +150,7 @@ protected:
             return;
         }
 
+
         simulationWorker.updateScene(&opt, &cam, &scn);
         mjr_render(viewport, &scn, &con);
 
@@ -156,35 +163,6 @@ protected:
 
     void resizeGL(int w, int h) override {
         // Update viewport here if necessary
-    }
-
-    void dragEnterEvent(QDragEnterEvent *event) override {
-        if (event->mimeData()->hasUrls()) {
-            QList<QUrl> urls = event->mimeData()->urls();
-            for (const QUrl &url: urls) {
-                QString filePath = url.toLocalFile();
-                QFileInfo fileInfo = QFileInfo(filePath);
-                if (fileInfo.suffix().compare("xml", Qt::CaseInsensitive) != 0) {
-                    // Not an xml file, ignore it
-                    event->ignore();
-                    return;
-                }
-            }
-            event->acceptProposedAction();
-        } else {
-            event->ignore();
-        }
-    }
-
-    void dropEvent(QDropEvent *event) override {
-        const QMimeData *mimeData = event->mimeData();
-
-        if (mimeData->hasUrls()) {
-            QUrl url = mimeData->urls().first();
-            QString filePath = url.toLocalFile();
-            loadModel(filePath);
-            event->acceptProposedAction();
-        }
     }
 
 private:
@@ -206,4 +184,4 @@ private:
     QString load_error;
 };
 
-#endif //MUJOCO_SIMULATION_QT_MUJOCOOPENGLWIDGET_HPP
+#endif //MUJOCO_SIMULATION_QT_MUJOCO_OPENGL_WINDOW_HPP
