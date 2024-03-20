@@ -2,10 +2,11 @@
 #define MUJOCO_SIMULATION_QT_CONTROL_PANEL_HPP
 
 #include <QWidget>
+#include <QScrollArea>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
-#include "Spoiler.h"
+#include "panel_sections/rendering_section.hpp"
 
 class ControlPanel : public QWidget {
 public:
@@ -13,18 +14,8 @@ public:
         auto layout = new QVBoxLayout;
         layout->setAlignment(Qt::AlignTop);
 
-        file = new Spoiler("File", 300, this);
-        auto fileLayout = new QVBoxLayout;
-        file->setContentLayout(fileLayout);
-
-
-        simulation = new Spoiler("Simulation", 300, this);
-        auto simulationLayout = new QVBoxLayout;
-        simulation->setContentLayout(simulationLayout);
-
-
-        layout->addWidget(file);
-        layout->addWidget(simulation);
+        renderingSection = new RenderingSection(this);
+        layout->addWidget(renderingSection);
 
         setLayout(layout);
 
@@ -33,9 +24,8 @@ public:
 
 
 private:
-    Spoiler *file;
+    RenderingSection *renderingSection;
 
-    Spoiler *simulation;
 };
 
 #endif //MUJOCO_SIMULATION_QT_CONTROL_PANEL_HPP

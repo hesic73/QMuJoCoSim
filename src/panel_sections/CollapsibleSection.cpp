@@ -1,19 +1,17 @@
 #include <QPropertyAnimation>
 
-#include "Spoiler.h"
+#include "CollapsibleSection.h"
 
-Spoiler::Spoiler(const QString &title, int animationDuration, QWidget *parent) : QWidget(parent),
-                                                                                 animationDuration(animationDuration) {
-    toggleButton.setStyleSheet("QToolButton { border: none; }");
+CollapsibleSection::CollapsibleSection(const QString &title, int animationDuration, QWidget *parent) : QWidget(parent),
+                                                                                                       animationDuration(animationDuration) {
+    toggleButton.setStyleSheet("QToolButton { border: none; font-size: 20px; }");
     toggleButton.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toggleButton.setArrowType(Qt::ArrowType::RightArrow);
     toggleButton.setText(title);
     toggleButton.setCheckable(true);
     toggleButton.setChecked(false);
+    toggleButton.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    headerLine.setFrameShape(QFrame::HLine);
-    headerLine.setFrameShadow(QFrame::Sunken);
-    headerLine.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
     contentArea.setStyleSheet("QScrollArea { background-color: white; border: none; }");
     contentArea.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -25,12 +23,10 @@ Spoiler::Spoiler(const QString &title, int animationDuration, QWidget *parent) :
     toggleAnimation.addAnimation(new QPropertyAnimation(this, "maximumHeight"));
     toggleAnimation.addAnimation(new QPropertyAnimation(&contentArea, "maximumHeight"));
     // don't waste space
-    mainLayout.setVerticalSpacing(0);
+    mainLayout.setSpacing(0);
     mainLayout.setContentsMargins(0, 0, 0, 0);
-    int row = 0;
-    mainLayout.addWidget(&toggleButton, row, 0, 1, 1, Qt::AlignLeft);
-    mainLayout.addWidget(&headerLine, row++, 2, 1, 1);
-    mainLayout.addWidget(&contentArea, row, 0, 1, 3);
+    mainLayout.addWidget(&toggleButton);
+    mainLayout.addWidget(&contentArea);
     setLayout(&mainLayout);
     QObject::connect(&toggleButton, &QToolButton::clicked, [this](bool checked) {
         toggleButton.setArrowType(checked ? Qt::ArrowType::DownArrow : Qt::ArrowType::RightArrow);
@@ -39,7 +35,7 @@ Spoiler::Spoiler(const QString &title, int animationDuration, QWidget *parent) :
     });
 }
 
-void Spoiler::setContentLayout(QLayout *contentLayout) {
+void CollapsibleSection::setContentLayout(QLayout *contentLayout) {
     delete contentArea.layout();
     contentArea.setLayout(contentLayout);
     const auto collapsedHeight = sizeHint().height() - contentArea.maximumHeight();

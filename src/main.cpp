@@ -37,8 +37,15 @@ int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
 
-
     MainWindow w;
+    w.setWindowTitle("MuJoCo Simulator");
+    QIcon icon(":/assets/icon.png");
+    if (icon.isNull()) {
+        // This should always be false, QIcon::isNull() is not reliable
+        qDebug() << "Icon is not loaded (but this check is unreliable).";
+    }
+    w.setWindowIcon(icon);
+
     w.resize(800, 600);
     w.show();
 

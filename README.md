@@ -16,6 +16,7 @@ A simple mujoco simulation application in Qt.
 
 ```bash
 mkdir -p build && cd build
+# e.g. cmake ../ -DCMAKE_PREFIX_PATH:PATH="/opt/mujoco-3.1.2/;/home/admin1/Qt/6.6.2/gcc_64/"
 cmake ../ -DCMAKE_PREFIX_PATH:PATH="path/to/mujoco;path/to/qt/library"
 cmake --build . --config Release
 ```
@@ -32,12 +33,13 @@ cmake --build . --config Release
 - [x] drag and drop
 - [x] screenshot
 - [x] support both XML and MJB
-- [ ] disable actions when mjModel is null.
+- [x] disable actions when mjModel is null.
+- [x] quit
+- [ ] shortcuts
+- [ ] icon
 - [ ] close simulation (free mjModel/mjData and terminate the simulation thread)
-- [ ] quit
 - [ ] camera control
 - [ ] toggle scn.flags (shadow, reflection, etc)
-- [ ] shortcuts
 
 ## Known Issues
 

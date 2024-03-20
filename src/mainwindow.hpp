@@ -11,6 +11,8 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <QHBoxLayout>
+#include <QApplication>
+#include <QIcon>
 
 #include "mujoco_opengl_window.hpp"
 #include "my_window_container.hpp"
@@ -41,6 +43,8 @@ public:
         controlPanel = new ControlPanel(this);
 
         auto layout = new QHBoxLayout;
+        layout->setSpacing(0);
+        layout->setContentsMargins(0, 0, 0, 0);
         layout->addWidget(controlPanel);
         layout->addWidget(new MyWindowContainer(muJoCoOpenGlWindow));
 
@@ -58,6 +62,7 @@ public:
             }
             muJoCoOpenGlWindow->loadModel(fileName);
         });
+        openAction->setShortcut(QKeySequence("Ctrl+O"));
 
         screenshotAction = new QAction("Screenshot", this);
         connect(screenshotAction, &QAction::triggered, [this]() {
@@ -83,13 +88,22 @@ public:
             muJoCoOpenGlWindow->saveMJB(fullPath);
         });
 
+        auto quitAction = new QAction("Quit", this);
+        connect(quitAction, &QAction::triggered, []() {
+            QApplication::quit();
+        });
+        quitAction->setShortcut(QKeySequence("Ctrl+Q"));
 
         auto *fileMenu = menuBar()->addMenu("&File");
         fileMenu->addAction(openAction);
         fileMenu->addSeparator();
         fileMenu->addAction(screenshotAction);
+        fileMenu->addSeparator();
         fileMenu->addAction(saveXMLAction);
         fileMenu->addAction(saveMJBAction);
+        fileMenu->addSeparator();
+        fileMenu->addAction(quitAction);
+
 
         fileMenu->setStyleSheet("QMenu::item:disabled { background-color: #f0f0f0; color: #a0a0a0; }");
 
@@ -105,6 +119,7 @@ public:
         connect(pauseAction, &QAction::triggered, muJoCoOpenGlWindow, [this]() {
             muJoCoOpenGlWindow->pauseSimulation(pauseAction->isChecked());
         });
+        pauseAction->setShortcut(QKeySequence(Qt::Key_Space));
 
         // Reset action
         resetAction = new QAction("&Reset", this);

@@ -35,10 +35,15 @@ qt_add_executable(mujoco_simulation_qt
         src/mainwindow.hpp
         src/mujoco_opengl_window.hpp
         src/my_window_container.hpp
-        src/Spoiler.h
-        src/Spoiler.cpp
+        src/panel_sections/CollapsibleSection.h
+        src/panel_sections/CollapsibleSection.cpp
         src/control_panel.hpp
+        src/panel_sections/rendering_section.hpp
 )
+
+qt_add_resources(mujoco_simulation_qt "resources" # This is an arbitrary identifier
+        PREFIX "/"              # This is the prefix you'll use to access the resources
+        FILES assets/icon.png)        # List of files to add; adjust paths as necessary
 
 target_link_libraries(mujoco_simulation_qt PRIVATE
         Qt6::Core
