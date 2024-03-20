@@ -10,9 +10,11 @@
 #include <QImageWriter>
 #include <QGuiApplication>
 #include <QScreen>
+#include <QHBoxLayout>
 
 #include "mujoco_opengl_window.hpp"
 #include "my_window_container.hpp"
+#include "control_panel.hpp"
 
 class MainWindow : public QMainWindow {
 Q_OBJECT
@@ -36,7 +38,15 @@ public:
 
         muJoCoOpenGlWindow = new MuJoCoOpenGLWindow(cam, opt, pert, con,
                                                     this);
-        setCentralWidget(new MyWindowContainer(muJoCoOpenGlWindow));
+        controlPanel = new ControlPanel(this);
+
+        auto layout = new QHBoxLayout;
+        layout->addWidget(controlPanel);
+        layout->addWidget(new MyWindowContainer(muJoCoOpenGlWindow));
+
+        auto widget = new QWidget(this);
+        widget->setLayout(layout);
+        setCentralWidget(widget);
 
         auto *openAction = new QAction("&Open", this);
         connect(openAction, &QAction::triggered, [this]() {
@@ -160,6 +170,7 @@ private:
     }
 
     MuJoCoOpenGLWindow *muJoCoOpenGlWindow;
+    ControlPanel *controlPanel;
 
     QAction *screenshotAction;
     QAction *saveXMLAction;

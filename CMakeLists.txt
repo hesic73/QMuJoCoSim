@@ -35,6 +35,9 @@ qt_add_executable(mujoco_simulation_qt
         src/mainwindow.hpp
         src/mujoco_opengl_window.hpp
         src/my_window_container.hpp
+        src/Spoiler.h
+        src/Spoiler.cpp
+        src/control_panel.hpp
 )
 
 target_link_libraries(mujoco_simulation_qt PRIVATE

@@ -49,3 +49,4 @@ https://gist.github.com/JeanElsner/755d0feb49864ecadab4ef00fd49a22b
 
 https://github.com/google-deepmind/mujoco/tree/main/simulate
 
+https://stackoverflow.com/a/37119983/15687189
