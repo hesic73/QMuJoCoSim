@@ -13,6 +13,7 @@
 #include <QHBoxLayout>
 #include <QApplication>
 #include <QIcon>
+#include <QScrollArea>
 
 #include "mujoco_opengl_window.hpp"
 #include "my_window_container.hpp"
@@ -40,12 +41,18 @@ public:
 
         muJoCoOpenGlWindow = new MuJoCoOpenGLWindow(cam, opt, pert, con,
                                                     this);
-        controlPanel = new ControlPanel(this);
+
+
+        auto scrollArea = new QScrollArea(this);
+        controlPanel = new ControlPanel(scrollArea);
+        scrollArea->setWidgetResizable(true);
+        scrollArea->setFixedWidth(150);
+        scrollArea->setWidget(controlPanel);
 
         auto layout = new QHBoxLayout;
         layout->setSpacing(0);
         layout->setContentsMargins(0, 0, 0, 0);
-        layout->addWidget(controlPanel);
+        layout->addWidget(scrollArea);
         layout->addWidget(new MyWindowContainer(muJoCoOpenGlWindow));
 
         auto widget = new QWidget(this);

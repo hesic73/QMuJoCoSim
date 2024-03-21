@@ -18,8 +18,6 @@ public:
         layout->addWidget(renderingSection);
 
         setLayout(layout);
-
-        setMaximumWidth(150);
     }
 
 
