@@ -47,7 +47,6 @@ public:
         mjv_defaultPerturb(&pert);
         mjv_defaultScene(&scn);
         mjv_makeScene(nullptr, &scn, MAX_GEOM); // Allocate scene
-        scn.flags[mjtRndFlag::mjRND_SKYBOX] = 0;
         std::copy(scn.flags, scn.flags + mjtRndFlag::mjNRNDFLAG, renderingEffects);
 
         // Initialize the render timer
@@ -57,7 +56,6 @@ public:
         });
         renderTimer.start();
 
-        // setAcceptDrops(true);
     }
 
     ~MuJoCoOpenGLWindow() override {
@@ -151,6 +149,11 @@ public slots:
 
     void saveMJB(const QString &filename) {
         simulationWorker.save_mjb(filename.toStdString());
+    }
+
+    void setRenderingFlag(mjtRndFlag flag, bool value) {
+        renderingEffects[flag] = value;
+        scn.flags[flag] = value;
     }
 
 signals:
