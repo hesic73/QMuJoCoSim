@@ -68,6 +68,11 @@ public:
         mjr_freeContext(&con);
     }
 
+    bool getRenderingFlag(mjtRndFlag flag) {
+        return renderingEffects[flag];
+    }
+
+
 public slots:
 
     void pauseSimulation(bool pause) {

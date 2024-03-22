@@ -54,6 +54,8 @@ public:
         layout->addWidget(scrollArea);
         layout->addWidget(new MyWindowContainer(muJoCoOpenGlWindow));
 
+        initializeRenderingEffectsButtonsChecked();
+
         auto widget = new QWidget(this);
         widget->setLayout(layout);
         setCentralWidget(widget);
@@ -71,7 +73,7 @@ public:
         openAction->setShortcut(QKeySequence("Ctrl+O"));
 
         closeAction = new QAction("Close", this);
-        connect(closeAction,&QAction::triggered,[this](){
+        connect(closeAction, &QAction::triggered, [this]() {
             muJoCoOpenGlWindow->closeModel();
             actionSetEnabledWhenModelIsNull();
         });
@@ -184,6 +186,40 @@ private slots:
 protected:
 
 private:
+    void initializeRenderingEffectsButtonsChecked() {
+        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_SHADOW,
+                                                                         muJoCoOpenGlWindow->getRenderingFlag(
+                                                                                 mjtRndFlag::mjRND_SHADOW));
+        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_WIREFRAME,
+                                                                         muJoCoOpenGlWindow->getRenderingFlag(
+                                                                                 mjtRndFlag::mjRND_WIREFRAME));
+        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_REFLECTION,
+                                                                         muJoCoOpenGlWindow->getRenderingFlag(
+                                                                                 mjtRndFlag::mjRND_REFLECTION));
+        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_ADDITIVE,
+                                                                         muJoCoOpenGlWindow->getRenderingFlag(
+                                                                                 mjtRndFlag::mjRND_ADDITIVE));
+        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_SKYBOX,
+                                                                         muJoCoOpenGlWindow->getRenderingFlag(
+                                                                                 mjtRndFlag::mjRND_SKYBOX));
+        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_FOG,
+                                                                         muJoCoOpenGlWindow->getRenderingFlag(
+                                                                                 mjtRndFlag::mjRND_FOG));
+        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_HAZE,
+                                                                         muJoCoOpenGlWindow->getRenderingFlag(
+                                                                                 mjtRndFlag::mjRND_HAZE));
+        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_SEGMENT,
+                                                                         muJoCoOpenGlWindow->getRenderingFlag(
+                                                                                 mjtRndFlag::mjRND_SEGMENT));
+        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_IDCOLOR,
+                                                                         muJoCoOpenGlWindow->getRenderingFlag(
+                                                                                 mjtRndFlag::mjRND_IDCOLOR));
+        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_CULL_FACE,
+                                                                         muJoCoOpenGlWindow->getRenderingFlag(
+                                                                                 mjtRndFlag::mjRND_CULL_FACE));
+
+    }
+
     void actionSetEnabledWhenModelIsNull() {
         closeAction->setEnabled(false);
 

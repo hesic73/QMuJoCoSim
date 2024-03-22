@@ -168,11 +168,13 @@ private:
 
 
 class RenderingSection : public CollapsibleSection {
+Q_OBJECT
+
 public:
     explicit RenderingSection(QWidget *parent = nullptr) : CollapsibleSection("Rendering", 300, parent) {
         auto myLayout = new QVBoxLayout;
 
-        auto sceneFlags = new RenderingEffects(this);
+        sceneFlags = new RenderingEffects(this);
 
         myLayout->addWidget(sceneFlags);
 
@@ -180,8 +182,14 @@ public:
         setContentLayout(myLayout);
     }
 
-private:
+public slots:
 
+    void setRenderingEffectsButtonChecked(mjtRndFlag flag, bool value) {
+        sceneFlags->setButtonChecked(flag, value);
+    };
+
+private:
+    RenderingEffects *sceneFlags;
 };
 
 #endif //MUJOCO_SIMULATION_QT_RENDERING_SECTION_HPP
