@@ -103,7 +103,7 @@ public slots:
             load_error = error;
             qCritical() << "Load model error:" << error;
             isLoading = false;
-            emit loadModelFailure();
+            emit loadModelFailure(simulationWorker.isModelDataNull());
             return; // Return without changing the current model and data
         }
         load_error.clear();
@@ -132,6 +132,15 @@ public slots:
         return;
     }
 
+    void closeModel() {
+        simulationWorker.terminateSimulation();
+        if (simulationThread.joinable()) {
+            simulationThread.join();
+        }
+        simulationWorker.close();
+
+    }
+
     void saveXML(const QString &filename) {
         simulationWorker.save_xml(filename.toStdString());
     }
@@ -144,7 +153,7 @@ signals:
 
     void loadModelSuccess();
 
-    void loadModelFailure();
+    void loadModelFailure(bool isNull);
 
 protected:
     void initializeGL() override {

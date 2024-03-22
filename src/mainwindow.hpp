@@ -71,6 +71,12 @@ public:
         });
         openAction->setShortcut(QKeySequence("Ctrl+O"));
 
+        closeAction = new QAction("Close", this);
+        connect(closeAction,&QAction::triggered,[this](){
+            muJoCoOpenGlWindow->closeModel();
+            actionSetEnabledWhenModelIsNull();
+        });
+
         screenshotAction = new QAction("Screenshot", this);
         connect(screenshotAction, &QAction::triggered, [this]() {
             shootScreen();
@@ -103,6 +109,7 @@ public:
 
         auto *fileMenu = menuBar()->addMenu("&File");
         fileMenu->addAction(openAction);
+        fileMenu->addAction(closeAction);
         fileMenu->addSeparator();
         fileMenu->addAction(screenshotAction);
         fileMenu->addSeparator();
@@ -131,18 +138,23 @@ public:
         // Reset action
         resetAction = new QAction("&Reset", this);
         simulationMenu->addAction(resetAction);
-        connect(resetAction, &QAction::triggered, muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::resetSimulation);\
+        connect(resetAction, &QAction::triggered, muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::resetSimulation);
+
+        resetAction->setShortcut(QKeySequence("Ctrl+R"));
 
 
         connect(muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::loadModelSuccess, [this]() {
-            enableActions();
+            actionSetEnabledWhenModelIsNotNull();
         });
 
-        connect(muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::loadModelFailure, [this]() {
-            disableActions();
+        connect(muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::loadModelFailure, [this](bool isNull) {
+            if (isNull)
+                actionSetEnabledWhenModelIsNull();
+            else
+                actionSetEnabledWhenModelIsNotNull();
         });
 
-        disableActions();
+        actionSetEnabledWhenModelIsNull();
     }
 
 private slots:
@@ -173,7 +185,9 @@ private slots:
 protected:
 
 private:
-    void disableActions() {
+    void actionSetEnabledWhenModelIsNull() {
+        closeAction->setEnabled(false);
+
         screenshotAction->setEnabled(false);
         saveXMLAction->setEnabled(false);
         saveMJBAction->setEnabled(false);
@@ -182,7 +196,9 @@ private:
         resetAction->setEnabled(false);
     }
 
-    void enableActions() {
+    void actionSetEnabledWhenModelIsNotNull() {
+        closeAction->setEnabled(true);
+
         screenshotAction->setEnabled(true);
         saveXMLAction->setEnabled(true);
         saveMJBAction->setEnabled(true);
@@ -194,6 +210,7 @@ private:
     MuJoCoOpenGLWindow *muJoCoOpenGlWindow;
     ControlPanel *controlPanel;
 
+    QAction *closeAction;
     QAction *screenshotAction;
     QAction *saveXMLAction;
     QAction *saveMJBAction;

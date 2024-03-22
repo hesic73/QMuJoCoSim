@@ -31,6 +31,10 @@ public:
     }
 
     void startSimulationLoop() {
+        std::cout << "startSimulationLoop begins." << std::endl;
+
+        terminateRequested = false;
+
         std::chrono::time_point<std::chrono::high_resolution_clock> begin;
 
         while (!terminateRequested) {
@@ -61,6 +65,8 @@ public:
             }
 
         }
+
+        std::cout << "startSimulationLoop ends." << std::endl;
     }
 
     void terminateSimulation() {
@@ -105,6 +111,11 @@ public:
         cleanup();
         m = newModel;
         d = mj_makeData(m);
+    }
+
+    void close() {
+        std::lock_guard<std::mutex> lockGuard(mtx);
+        cleanup();
     }
 
     void save_xml(const std::string &filename) {

@@ -37,7 +37,7 @@ cmake --build . --config Release
 - [x] quit
 - [x] shortcuts
 - [x] icon
-- [ ] close simulation (free mjModel/mjData and terminate the simulation thread)
+- [x] close simulation (free mjModel/mjData and terminate the simulation thread)
 - [ ] camera control
 - [ ] toggle scn.flags (shadow, reflection, etc)
 
