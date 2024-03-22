@@ -11,20 +11,20 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_path(MUJOCO_INCLUDE_DIR NAMES mujoco/mujoco.h HINTS ${CMAKE_PREFIX_PATH}/include)
-if(NOT MUJOCO_INCLUDE_DIR)
+if (NOT MUJOCO_INCLUDE_DIR)
     message(FATAL_ERROR "MuJoCo headers not found. Please specify the MuJoCo directory using -DCMAKE_PREFIX_PATH.")
-endif()
+endif ()
 
 
 # Find MuJoCo Library
 find_library(MUJOCO_LIBRARY NAMES mujoco libmujoco HINTS ${CMAKE_PREFIX_PATH}/lib)
-if(NOT MUJOCO_LIBRARY)
+if (NOT MUJOCO_LIBRARY)
     message(FATAL_ERROR "MuJoCo library not found. Please specify the MuJoCo directory using -DCMAKE_PREFIX_PATH.")
-endif()
+endif ()
 
 # Include the MuJoCo headers
-include_directories(${MUJOCO_INCLUDE_DIR})
-
+include_directories(${MUJOCO_INCLUDE_DIR}
+        src)
 
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGL OpenGLWidgets)
@@ -35,10 +35,12 @@ qt_add_executable(mujoco_simulation_qt
         src/mainwindow.hpp
         src/mujoco_opengl_window.hpp
         src/my_window_container.hpp
-        src/panel_sections/CollapsibleSection.h
-        src/panel_sections/CollapsibleSection.cpp
+        src/panel_sections/collapsible_section.h
+        src/panel_sections/collapsible_section.cpp
         src/control_panel.hpp
         src/panel_sections/rendering_section.hpp
+        src/my_widgets/toggling_button.hpp
+        src/utils.hpp
 )
 
 qt_add_resources(mujoco_simulation_qt "resources" # This is an arbitrary identifier

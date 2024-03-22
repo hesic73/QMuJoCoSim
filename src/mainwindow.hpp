@@ -39,14 +39,13 @@ public:
         mjr_defaultContext(&con);
 
 
-        muJoCoOpenGlWindow = new MuJoCoOpenGLWindow(cam, opt, pert, con,
-                                                    this);
+        muJoCoOpenGlWindow = new MuJoCoOpenGLWindow(cam, opt, pert, con);
 
 
         auto scrollArea = new QScrollArea(this);
         controlPanel = new ControlPanel(scrollArea);
         scrollArea->setWidgetResizable(true);
-        scrollArea->setFixedWidth(150);
+        scrollArea->setFixedWidth(250);
         scrollArea->setWidget(controlPanel);
 
         auto layout = new QHBoxLayout;

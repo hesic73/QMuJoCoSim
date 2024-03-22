@@ -19,9 +19,12 @@
 
 #include <memory>
 #include <cstring>
+#include <algorithm>
 
 
 #include "simulation_worker.hpp"
+
+#include "utils.hpp"
 
 static constexpr int MAX_GEOM = 2000;
 
@@ -33,7 +36,6 @@ public:
      * All structs are trivially-copiable (although copying is a bit expensive).
      */
     explicit MuJoCoOpenGLWindow(mjvCamera cam, mjvOption opt, mjvPerturb pert, mjrContext con,
-                                QWidget *parent = nullptr,
                                 int fps = 60)
             : QOpenGLWindow(),
               simulationWorker(nullptr, nullptr, fps),
@@ -42,9 +44,11 @@ public:
               pert(pert),
               con(con) {
 
+        mjv_defaultPerturb(&pert);
         mjv_defaultScene(&scn);
         mjv_makeScene(nullptr, &scn, MAX_GEOM); // Allocate scene
-
+        scn.flags[mjtRndFlag::mjRND_SKYBOX] = 0;
+        std::copy(scn.flags, scn.flags + mjtRndFlag::mjNRNDFLAG, renderingEffects);
 
         // Initialize the render timer
         renderTimer.setInterval(1000 / fps);
@@ -109,7 +113,7 @@ public slots:
         load_error.clear();
 
         mjv_makeScene(newModel, &scn, MAX_GEOM); // Allocate scene
-
+        std::copy(renderingEffects, renderingEffects + mjtRndFlag::mjNRNDFLAG, scn.flags);
 
         simulationWorker.replace(newModel);
         if (!simulationThread.joinable()) {
@@ -193,7 +197,7 @@ protected:
         }
 
 
-        simulationWorker.updateScene(&opt, &cam, &scn);
+        simulationWorker.updateScene(&opt, &pert, &cam, &scn);
         mjr_render(viewport, &scn, &con);
 
         if (simulationWorker.isPaused()) {
@@ -224,6 +228,8 @@ private:
 
     std::atomic_bool isLoading = false;
     QString load_error;
+
+    mjtByte renderingEffects[mjtRndFlag::mjNRNDFLAG];
 };
 
 #endif //MUJOCO_SIMULATION_QT_MUJOCO_OPENGL_WINDOW_HPP

@@ -92,9 +92,9 @@ public:
         mjr_makeContext(m, con, mjFONTSCALE_100);
     }
 
-    void updateScene(mjvOption *opt, mjvCamera *cam, mjvScene *scn) {
+    void updateScene(mjvOption *opt, mjvPerturb *pert, mjvCamera *cam, mjvScene *scn) {
         std::lock_guard<std::mutex> lockGuard(mtx);
-        mjv_updateScene(m, d, opt, nullptr, cam, mjCAT_ALL, scn);
+        mjv_updateScene(m, d, opt, pert, cam, mjCAT_ALL, scn);
     }
 
     bool isModelDataNull() {

@@ -1,6 +1,6 @@
 #include <QPropertyAnimation>
 
-#include "CollapsibleSection.h"
+#include "collapsible_section.h"
 
 CollapsibleSection::CollapsibleSection(const QString &title, int animationDuration, QWidget *parent) : QWidget(parent),
                                                                                                        animationDuration(animationDuration) {
