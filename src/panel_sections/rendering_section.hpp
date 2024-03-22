@@ -180,7 +180,16 @@ public:
 
 
         setContentLayout(myLayout);
+
+
+        connect(sceneFlags, &RenderingEffects::updateFlag, [this](mjtRndFlag flag, bool value) {
+            emit updateRenderingFlag(flag, value);
+        });
     }
+
+signals:
+
+    void updateRenderingFlag(mjtRndFlag flag, bool value);
 
 public slots:
 

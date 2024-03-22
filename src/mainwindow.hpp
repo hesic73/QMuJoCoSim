@@ -218,6 +218,11 @@ private:
                                                                          muJoCoOpenGlWindow->getRenderingFlag(
                                                                                  mjtRndFlag::mjRND_CULL_FACE));
 
+
+        connect(controlPanel->renderingSection, &RenderingSection::updateRenderingFlag,
+                [this](mjtRndFlag flag, bool value) {
+                    muJoCoOpenGlWindow->setRenderingFlag(flag, value);
+                });
     }
 
     void actionSetEnabledWhenModelIsNull() {
