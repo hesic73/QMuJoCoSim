@@ -55,6 +55,7 @@ public:
         layout->addWidget(new MyWindowContainer(muJoCoOpenGlWindow));
 
         initializeRenderingEffectsButtonsChecked();
+        initializeModeElementsButtonsChecked();
 
         auto widget = new QWidget(this);
         widget->setLayout(layout);
@@ -187,41 +188,31 @@ protected:
 
 private:
     void initializeRenderingEffectsButtonsChecked() {
-        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_SHADOW,
-                                                                         muJoCoOpenGlWindow->getRenderingFlag(
-                                                                                 mjtRndFlag::mjRND_SHADOW));
-        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_WIREFRAME,
-                                                                         muJoCoOpenGlWindow->getRenderingFlag(
-                                                                                 mjtRndFlag::mjRND_WIREFRAME));
-        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_REFLECTION,
-                                                                         muJoCoOpenGlWindow->getRenderingFlag(
-                                                                                 mjtRndFlag::mjRND_REFLECTION));
-        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_ADDITIVE,
-                                                                         muJoCoOpenGlWindow->getRenderingFlag(
-                                                                                 mjtRndFlag::mjRND_ADDITIVE));
-        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_SKYBOX,
-                                                                         muJoCoOpenGlWindow->getRenderingFlag(
-                                                                                 mjtRndFlag::mjRND_SKYBOX));
-        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_FOG,
-                                                                         muJoCoOpenGlWindow->getRenderingFlag(
-                                                                                 mjtRndFlag::mjRND_FOG));
-        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_HAZE,
-                                                                         muJoCoOpenGlWindow->getRenderingFlag(
-                                                                                 mjtRndFlag::mjRND_HAZE));
-        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_SEGMENT,
-                                                                         muJoCoOpenGlWindow->getRenderingFlag(
-                                                                                 mjtRndFlag::mjRND_SEGMENT));
-        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_IDCOLOR,
-                                                                         muJoCoOpenGlWindow->getRenderingFlag(
-                                                                                 mjtRndFlag::mjRND_IDCOLOR));
-        controlPanel->renderingSection->setRenderingEffectsButtonChecked(mjtRndFlag::mjRND_CULL_FACE,
-                                                                         muJoCoOpenGlWindow->getRenderingFlag(
-                                                                                 mjtRndFlag::mjRND_CULL_FACE));
 
+        for (int i = 0; i < mjtRndFlag::mjNRNDFLAG; i++) {
+            controlPanel->renderingSection->setRenderingEffectsButtonChecked(static_cast<mjtRndFlag>(i),
+                                                                             muJoCoOpenGlWindow->getRenderingFlag(
+                                                                                     static_cast<mjtRndFlag>(i)));
+        }
 
         connect(controlPanel->renderingSection, &RenderingSection::updateRenderingFlag,
                 [this](mjtRndFlag flag, bool value) {
                     muJoCoOpenGlWindow->setRenderingFlag(flag, value);
+                });
+    }
+
+
+    void initializeModeElementsButtonsChecked() {
+
+        for (int i = 0; i < mjtVisFlag::mjNVISFLAG; i++) {
+            controlPanel->renderingSection->setModelElementsButtonChecked(static_cast<mjtVisFlag>(i),
+                                                                          muJoCoOpenGlWindow->getModelElementsFlag(
+                                                                                  static_cast<mjtVisFlag>(i)));
+        }
+
+        connect(controlPanel->renderingSection, &RenderingSection::updateModelElementsFlag,
+                [this](mjtVisFlag flag, bool value) {
+                    muJoCoOpenGlWindow->setModelElement(flag, value);
                 });
     }
 

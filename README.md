@@ -40,7 +40,7 @@ cmake --build . --config Release
 - [x] toggling OpenGL Effects
 - [x] free camera control
 - [ ] free camera align
-- [ ] toggling model elements
+- [x] toggling model elements
 - [ ] headlight control
 
 ### Low priority

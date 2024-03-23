@@ -15,93 +15,26 @@
 
 #include "my_widgets/toggling_button.hpp"
 
-class RenderingEffects : public QGroupBox {
+class ModelElements : public QGroupBox {
 Q_OBJECT
 
 public:
-    explicit RenderingEffects(QWidget *parent = nullptr) : QGroupBox(parent) {
+    explicit ModelElements(QWidget *parent = nullptr) : QGroupBox("Model Elements", parent) {
         auto layout = new QGridLayout;
+        layout->setContentsMargins(0, 0, 0, 0);
 
-        shadow = new TogglingButton;
-        shadow->setText("Shadow");
-        connect(shadow, &TogglingButton::clicked, [this]() {
-            emit updateFlag(mjtRndFlag::mjRND_SHADOW, shadow->isChecked());
-        });
+        for (int i = 0; i < mjtVisFlag::mjNVISFLAG; i++) {
+            buttons[i] = new TogglingButton;
+            buttons[i]->setText(mjVISSTRING[i][0]);
 
-        // Wireframe button setup
-        wireframe = new TogglingButton;
-        wireframe->setText("Wireframe");
-        connect(wireframe, &TogglingButton::clicked, [this]() {
-            emit updateFlag(mjtRndFlag::mjRND_WIREFRAME, wireframe->isChecked());
-        });
+            connect(buttons[i], &TogglingButton::clicked, [this, i]() {
+                emit updateFlag(static_cast<mjtVisFlag>(i), buttons[i]->isChecked());
+            });
 
-        // Reflection button setup
-        reflection = new TogglingButton;
-        reflection->setText("Reflection");
-        connect(reflection, &TogglingButton::clicked, [this]() {
-            emit updateFlag(mjtRndFlag::mjRND_REFLECTION, reflection->isChecked());
-        });
 
-        // Additive button setup
-        additive = new TogglingButton;
-        additive->setText("Additive");
-        connect(additive, &TogglingButton::clicked, [this]() {
-            emit updateFlag(mjtRndFlag::mjRND_ADDITIVE, additive->isChecked());
-        });
+            layout->addWidget(buttons[i], i / 2, i % 2);
+        }
 
-        // Skybox button setup
-        skybox = new TogglingButton;
-        skybox->setText("Skybox");
-        connect(skybox, &TogglingButton::clicked, [this]() {
-            emit updateFlag(mjtRndFlag::mjRND_SKYBOX, skybox->isChecked());
-        });
-
-        // Fog button setup
-        fog = new TogglingButton;
-        fog->setText("Fog");
-        connect(fog, &TogglingButton::clicked, [this]() {
-            emit updateFlag(mjtRndFlag::mjRND_FOG, fog->isChecked());
-        });
-
-        // Haze button setup
-        haze = new TogglingButton;
-        haze->setText("Haze");
-        connect(haze, &TogglingButton::clicked, [this]() {
-            emit updateFlag(mjtRndFlag::mjRND_HAZE, haze->isChecked());
-        });
-
-        // Segment button setup
-        segment = new TogglingButton;
-        segment->setText("Segment");
-        connect(segment, &TogglingButton::clicked, [this]() {
-            emit updateFlag(mjtRndFlag::mjRND_SEGMENT, segment->isChecked());
-        });
-
-        // Id Color button setup
-        idColor = new TogglingButton;
-        idColor->setText("Id Color");
-        connect(idColor, &TogglingButton::clicked, [this]() {
-            emit updateFlag(mjtRndFlag::mjRND_IDCOLOR, idColor->isChecked());
-        });
-
-        // Cull Face button setup
-        cullFace = new TogglingButton;
-        cullFace->setText("Cull Face");
-        connect(cullFace, &TogglingButton::clicked, [this]() {
-            emit updateFlag(mjtRndFlag::mjRND_CULL_FACE, cullFace->isChecked());
-        });
-
-        // Layout configuration (no changes needed)
-        layout->addWidget(shadow, 0, 0);
-        layout->addWidget(wireframe, 0, 1);
-        layout->addWidget(reflection, 1, 0);
-        layout->addWidget(additive, 1, 1);
-        layout->addWidget(skybox, 2, 0);
-        layout->addWidget(fog, 2, 1);
-        layout->addWidget(haze, 3, 0);
-        layout->addWidget(segment, 3, 1);
-        layout->addWidget(idColor, 4, 0);
-        layout->addWidget(cullFace, 4, 1);
 
         setLayout(layout);
     }
@@ -111,42 +44,51 @@ public slots:
     /**
      * This method does not emit signals!!!
      */
-    void setButtonChecked(mjtRndFlag flag, bool value) {
-        switch (flag) {
-            case mjRND_SHADOW:
-                shadow->setChecked(value);
-                break;
-            case mjRND_WIREFRAME:
-                wireframe->setChecked(value);
-                break;
-            case mjRND_REFLECTION:
-                reflection->setChecked(value);
-                break;
-            case mjRND_ADDITIVE:
-                additive->setChecked(value);
-                break;
-            case mjRND_SKYBOX:
-                skybox->setChecked(value);
-                break;
-            case mjRND_FOG:
-                fog->setChecked(value);
-                break;
-            case mjRND_HAZE:
-                haze->setChecked(value);
-                break;
-            case mjRND_SEGMENT:
-                segment->setChecked(value);
-                break;
-            case mjRND_IDCOLOR:
-                idColor->setChecked(value);
-                break;
-            case mjRND_CULL_FACE:
-                cullFace->setChecked(value);
-                break;
-            default:
-                qCritical() << "Unknown flag!!!";
-                break;
+    void setButtonChecked(mjtVisFlag flag, bool value) {
+        int i = static_cast<int>(flag);
+        Q_ASSERT(i >= 0);
+        Q_ASSERT(i < mjtVisFlag::mjNVISFLAG);
+        buttons[i]->setChecked(value);
+    }
+
+signals:
+
+    void updateFlag(mjtVisFlag flag, bool value);
+
+private:
+    TogglingButton *buttons[mjtVisFlag::mjNVISFLAG];
+};
+
+
+class RenderingEffects : public QGroupBox {
+Q_OBJECT
+
+public:
+    explicit RenderingEffects(QWidget *parent = nullptr) : QGroupBox("Rendering Effects", parent) {
+        auto layout = new QGridLayout;
+        layout->setContentsMargins(0, 0, 0, 0);
+
+        for (int i = 0; i < mjtRndFlag::mjNRNDFLAG; i++) {
+            buttons[i] = new TogglingButton;
+            buttons[i]->setText(mjRNDSTRING[i][0]);
+
+            connect(buttons[i], &TogglingButton::clicked, [this, i]() {
+                emit updateFlag(static_cast<mjtRndFlag>(i), buttons[i]->isChecked());
+            });
+
+            layout->addWidget(buttons[i], i / 2, i % 2);
         }
+
+        setLayout(layout);
+    }
+
+public slots:
+
+    void setButtonChecked(mjtRndFlag flag, bool value) {
+        int i = static_cast<int>(flag);
+        Q_ASSERT(i >= 0);
+        Q_ASSERT(i < mjtRndFlag::mjNRNDFLAG);
+        buttons[i]->setChecked(value);
     }
 
 signals:
@@ -154,16 +96,7 @@ signals:
     void updateFlag(mjtRndFlag flag, bool value);
 
 private:
-    TogglingButton *shadow;
-    TogglingButton *wireframe;
-    TogglingButton *reflection;
-    TogglingButton *additive;
-    TogglingButton *skybox;
-    TogglingButton *fog;
-    TogglingButton *haze;
-    TogglingButton *segment;
-    TogglingButton *idColor;
-    TogglingButton *cullFace;
+    TogglingButton *buttons[mjtRndFlag::mjNRNDFLAG];
 };
 
 
@@ -174,13 +107,20 @@ public:
     explicit RenderingSection(QWidget *parent = nullptr) : CollapsibleSection("Rendering", 300, parent) {
         auto myLayout = new QVBoxLayout;
 
+        myLayout->setContentsMargins(0, 0, 0, 0);
+
+        modelElements = new ModelElements(this);
         sceneFlags = new RenderingEffects(this);
 
+        myLayout->addWidget(modelElements);
         myLayout->addWidget(sceneFlags);
 
 
         setContentLayout(myLayout);
 
+        connect(modelElements, &ModelElements::updateFlag, [this](mjtVisFlag flag, bool value) {
+            emit updateModelElementsFlag(flag, value);
+        });
 
         connect(sceneFlags, &RenderingEffects::updateFlag, [this](mjtRndFlag flag, bool value) {
             emit updateRenderingFlag(flag, value);
@@ -188,6 +128,8 @@ public:
     }
 
 signals:
+
+    void updateModelElementsFlag(mjtVisFlag flag, bool value);
 
     void updateRenderingFlag(mjtRndFlag flag, bool value);
 
@@ -197,8 +139,14 @@ public slots:
         sceneFlags->setButtonChecked(flag, value);
     };
 
+    void setModelElementsButtonChecked(mjtVisFlag flag, bool value) {
+        modelElements->setButtonChecked(flag, value);
+    };
+
 private:
+    ModelElements *modelElements;
     RenderingEffects *sceneFlags;
+
 };
 
 #endif //QMUJOCOSIM_RENDERING_SECTION_HPP

@@ -68,8 +68,12 @@ public:
         mjr_freeContext(&con);
     }
 
-    bool getRenderingFlag(mjtRndFlag flag) {
+    bool getRenderingFlag(mjtRndFlag flag) const {
         return renderingEffects[flag];
+    }
+
+    bool getModelElementsFlag(mjtVisFlag flag) const {
+        return opt.flags[flag];
     }
 
 
@@ -159,6 +163,10 @@ public slots:
     void setRenderingFlag(mjtRndFlag flag, bool value) {
         renderingEffects[flag] = value;
         scn.flags[flag] = value;
+    }
+
+    void setModelElement(mjtVisFlag flag, bool value) {
+        opt.flags[flag] = value;
     }
 
 signals:
