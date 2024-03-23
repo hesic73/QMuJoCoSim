@@ -1,16 +1,28 @@
-# mujoco_simulation_qt
+# QMuJoCoSim
 
 ![Static Badge](https://img.shields.io/badge/std-c%2B%2B20-blue)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/hesic73/PictureConverter/master/LICENSE)
 
-A simple mujoco simulation application in Qt.
+## Controls Guide
 
-## Requirements
+| Function   | Key/Action           |
+| ---------- | -------------------- |
+| Open       | Ctrl + O             |
+| Quit       | Ctrl + Q             |
+| Play/Pause | Space                |
+| Zoom       | Scroll / Middle drag |
+| View Orbit | Left drag            |
+| View Pan   | Shift + Right Drag   |
 
-- CMake
-- Modern C++ compiler
-- Qt6
-- MuJoCo
+## Build Specifications
+
+The following are the primary components and specific versions utilized for development (similar versions may also work):
+
+- **CMake**: 3.22.1
+- **C++ Compiler**: g++ 11.4.0 (C++20 standard)
+- **Qt6**: 6.6.2
+- **MuJoCo**: 3.1.2
+
 
 ## Compilation
 
@@ -23,32 +35,27 @@ cmake --build . --config Release
 
 ## To-Do List
 
-### Improvements
-
-- [ ] Revise simulation and rendering synchronization: the simulation thread scheduled at 60 FPS, triggering the rendering process immediately upon each simulation cycle's completion.
-- [ ] Configure directory to save screenshots, models
-
-### Features
-
 - [x] drag and drop
 - [x] screenshot
-- [x] support both XML and MJB
-- [x] disable actions when mjModel is null.
-- [x] quit
-- [x] shortcuts
-- [x] icon
-- [x] close simulation (free mjModel/mjData and terminate the simulation thread)
-- [ ] camera control
-- [ ] toggle scn.flags (shadow, reflection, etc)
+- [x] toggling OpenGL Effects
+- [x] free camera control
+- [ ] free camera align
+- [ ] toggling model elements
+- [ ] headlight control
+
+### Low priority
+
+- [ ] Revise simulation and rendering synchronization: the simulation thread scheduled at 60 FPS, triggering the rendering process immediately upon each simulation cycle's completion.
+- [ ] Implement options for users to specify directories for screenshots and model storage.
 
 ## Known Issues
 
-- Currently, the rendering operates at a constant FPS, based on the presumption that **the simulation outpaces real-time**. Should this not be the case, the program could become overloaded. Implementing buffer strategies might be a potential solution.
+- Currently, the rendering operates at a constant FPS, based on the presumption that **simulation speed surpasses real-time**. Should this not be the case, the program could become overloaded. Implementing buffer strategies might be a potential solution.
 
 ## Reference
 
-https://gist.github.com/JeanElsner/755d0feb49864ecadab4ef00fd49a22b
+- https://gist.github.com/JeanElsner/755d0feb49864ecadab4ef00fd49a22b
 
-https://github.com/google-deepmind/mujoco/tree/main/simulate
+- https://github.com/google-deepmind/mujoco/tree/main/simulate
 
-https://stackoverflow.com/a/37119983/15687189
+- https://stackoverflow.com/a/37119983/15687189

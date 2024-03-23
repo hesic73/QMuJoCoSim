@@ -1,5 +1,5 @@
-#ifndef MUJOCO_SIMULATION_QT_SIMULATION_WORKER_HPP
-#define MUJOCO_SIMULATION_QT_SIMULATION_WORKER_HPP
+#ifndef QMUJOCOSIM_SIMULATION_WORKER_HPP
+#define QMUJOCOSIM_SIMULATION_WORKER_HPP
 
 #include <iostream>
 #include <chrono>
@@ -139,6 +139,15 @@ public:
         mj_saveModel(m, filename.c_str(), nullptr, 0);
     }
 
+
+    void moveCamera(mjtMouse action, mjtNum relative_delta_x, mjtNum relative_delta_y, mjvScene *scn, mjvCamera *cam) {
+        std::lock_guard<std::mutex> lockGuard(mtx);
+        if (m == nullptr) {
+            return;
+        }
+        mjv_moveCamera(m, action, relative_delta_x, relative_delta_y, scn, cam);
+    }
+
 private:
     void cleanup() {
         if (d) {
@@ -165,4 +174,4 @@ private:
 
 };
 
-#endif //MUJOCO_SIMULATION_QT_SIMULATION_WORKER_HPP
+#endif //QMUJOCOSIM_SIMULATION_WORKER_HPP

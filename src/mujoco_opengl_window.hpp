@@ -1,5 +1,5 @@
-#ifndef MUJOCO_SIMULATION_QT_MUJOCO_OPENGL_WINDOW_HPP
-#define MUJOCO_SIMULATION_QT_MUJOCO_OPENGL_WINDOW_HPP
+#ifndef QMUJOCOSIM_MUJOCO_OPENGL_WINDOW_HPP
+#define QMUJOCOSIM_MUJOCO_OPENGL_WINDOW_HPP
 
 #include <QOpenGLWindow>
 #include <mujoco/mujoco.h>
@@ -11,7 +11,7 @@
 #include <QElapsedTimer>
 #include <QThread>
 
-
+#include <QWheelEvent>
 #include <QOpenGLFunctions>
 #include <QOpenGLContext>
 
@@ -219,6 +219,49 @@ protected:
         // Update viewport here if necessary
     }
 
+
+    void wheelEvent(QWheelEvent *event) override {
+        constexpr mjtNum zoom_increment = 0.02;
+        auto delta = event->angleDelta().y() / 120;
+        simulationWorker.moveCamera(mjtMouse::mjMOUSE_ZOOM, 0, delta * zoom_increment, &scn, &cam);
+    }
+
+
+    void mousePressEvent(QMouseEvent *event) override {
+        // Start drag on mouse press
+        if (event->button() == Qt::LeftButton || event->button() == Qt::RightButton ||
+            event->button() == Qt::MiddleButton) {
+            dragging = true;
+            dragStartPosition = event->pos();
+            dragButton = event->button();
+            modifiers = event->modifiers();
+        }
+    }
+
+    void mouseReleaseEvent(QMouseEvent *event) override {
+        dragging = false;
+    }
+
+    void mouseMoveEvent(QMouseEvent *event) override {
+        if (!dragging) return;
+
+        // Calculate the distance the mouse has moved since the press event.
+        auto delta = (event->pos() - dragStartPosition);
+        int distance = delta.manhattanLength();
+        if (distance < QApplication::startDragDistance()) {
+            return;
+        }
+
+        auto action = get_mjtMouse(dragButton, modifiers);
+
+        auto relX = 1.0 * delta.x() / width();
+        auto relY = 1.0 * delta.y() / height();
+
+        simulationWorker.moveCamera(action, relX, relY, &scn, &cam);
+
+        dragStartPosition = event->pos();
+    }
+
 private:
     SimulationWorker simulationWorker;
 
@@ -238,6 +281,12 @@ private:
     QString load_error;
 
     mjtByte renderingEffects[mjtRndFlag::mjNRNDFLAG];
+
+
+    bool dragging = false;
+    QPoint dragStartPosition;
+    Qt::MouseButton dragButton;
+    Qt::KeyboardModifiers modifiers;
 };
 
-#endif //MUJOCO_SIMULATION_QT_MUJOCO_OPENGL_WINDOW_HPP
+#endif //QMUJOCOSIM_MUJOCO_OPENGL_WINDOW_HPP

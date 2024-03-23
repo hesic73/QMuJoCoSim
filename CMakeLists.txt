@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(mujoco_simulation_qt
+project(QMuJoCoSim
         VERSION 0.1.0
-        DESCRIPTION "A simple MuJoCo simulation application in Qt"
-        HOMEPAGE_URL "https://github.com/hesic73/mujoco_simulation_qt"
+        DESCRIPTION "A simple MuJoCo simulator implemented in Qt"
+        HOMEPAGE_URL "https://github.com/hesic73/QMuJoCoSim"
         LANGUAGES CXX)
 
 
@@ -30,7 +30,7 @@ include_directories(${MUJOCO_INCLUDE_DIR}
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGL OpenGLWidgets)
 qt_standard_project_setup()
 
-qt_add_executable(mujoco_simulation_qt
+qt_add_executable(QMuJoCoSim
         src/main.cpp
         src/mainwindow.hpp
         src/mujoco_opengl_window.hpp
@@ -43,11 +43,11 @@ qt_add_executable(mujoco_simulation_qt
         src/utils.hpp
 )
 
-qt_add_resources(mujoco_simulation_qt "resources" # This is an arbitrary identifier
+qt_add_resources(QMuJoCoSim "resources" # This is an arbitrary identifier
         PREFIX "/"              # This is the prefix you'll use to access the resources
         FILES assets/icon.png)        # List of files to add; adjust paths as necessary
 
-target_link_libraries(mujoco_simulation_qt PRIVATE
+target_link_libraries(QMuJoCoSim PRIVATE
         Qt6::Core
         Qt6::Gui
         Qt6::Widgets

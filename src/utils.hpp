@@ -1,5 +1,5 @@
-#ifndef MUJOCO_SIMULATION_QT_UTILS_HPP
-#define MUJOCO_SIMULATION_QT_UTILS_HPP
+#ifndef QMUJOCOSIM_UTILS_HPP
+#define QMUJOCOSIM_UTILS_HPP
 
 #include "mujoco/mujoco.h"
 
@@ -21,4 +21,20 @@ inline QString renderingEffectsToString(mjvScene *scn) {
             .arg(scn->flags[mjtRndFlag::mjRND_CULL_FACE]);
 }
 
-#endif //MUJOCO_SIMULATION_QT_UTILS_HPP
+inline mjtMouse get_mjtMouse(Qt::MouseButton dragButton, Qt::KeyboardModifiers modifiers) {
+    if (dragButton == Qt::LeftButton && (modifiers & Qt::ShiftModifier)) {
+        return mjtMouse::mjMOUSE_ROTATE_H;
+    } else if (dragButton == Qt::LeftButton && !(modifiers & Qt::ShiftModifier)) {
+        return mjtMouse::mjMOUSE_ROTATE_V;
+    } else if (dragButton == Qt::RightButton && (modifiers & Qt::ShiftModifier)) {
+        return mjtMouse::mjMOUSE_MOVE_H;
+    } else if (dragButton == Qt::RightButton && !(modifiers & Qt::ShiftModifier)) {
+        return mjtMouse::mjMOUSE_MOVE_V;
+    } else if (dragButton == Qt::MiddleButton) {
+        return mjtMouse::mjMOUSE_ZOOM;
+    }
+    mju_warning("Unknown combination of dragButton and modifiers");
+    return mjtMouse::mjMOUSE_NONE;
+}
+
+#endif //QMUJOCOSIM_UTILS_HPP

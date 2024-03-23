@@ -1,5 +1,5 @@
-#ifndef MUJOCO_SIMULATION_QT_MAINWINDOW_H
-#define MUJOCO_SIMULATION_QT_MAINWINDOW_H
+#ifndef QMUJOCOSIM_MAINWINDOW_H
+#define QMUJOCOSIM_MAINWINDOW_H
 
 #include <QMainWindow>
 #include <QAction>
@@ -259,4 +259,4 @@ private:
     QAction *resetAction;
 };
 
-#endif //MUJOCO_SIMULATION_QT_MAINWINDOW_H
+#endif //QMUJOCOSIM_MAINWINDOW_H
