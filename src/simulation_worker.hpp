@@ -139,6 +139,24 @@ public:
         mj_saveModel(m, filename.c_str(), nullptr, 0);
     }
 
+    void print_model(const std::string &filename) {
+        std::lock_guard<std::mutex> lockGuard(mtx);
+        if (m == nullptr) {
+            std::cout << "Skipping print operation: 'm' is not initialized (nullptr)." << std::endl;
+            return;
+        }
+        mj_printModel(m, filename.c_str());
+    }
+
+    void print_data(const std::string &filename) {
+        std::lock_guard<std::mutex> lockGuard(mtx);
+        if (m == nullptr || d == nullptr) {
+            std::cout << "Skipping print operation: 'm' is not initialized (nullptr)." << std::endl;
+            return;
+        }
+        mj_printData(m, d, filename.c_str());
+    }
+
 
     void moveCamera(mjtMouse action, mjtNum relative_delta_x, mjtNum relative_delta_y, mjvScene *scn, mjvCamera *cam) {
         std::lock_guard<std::mutex> lockGuard(mtx);

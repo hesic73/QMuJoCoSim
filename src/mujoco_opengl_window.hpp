@@ -160,6 +160,14 @@ public slots:
         simulationWorker.save_mjb(filename.toStdString());
     }
 
+    void printModel(const QString &filename) {
+        simulationWorker.print_model(filename.toStdString());
+    }
+
+    void printData(const QString &filename) {
+        simulationWorker.print_data(filename.toStdString());
+    }
+
     void setRenderingFlag(mjtRndFlag flag, bool value) {
         renderingEffects[flag] = value;
         scn.flags[flag] = value;

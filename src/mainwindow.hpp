@@ -103,6 +103,23 @@ public:
             muJoCoOpenGlWindow->saveMJB(fullPath);
         });
 
+
+        printModelAction = new QAction("Print Model", this);
+        connect(printModelAction, &QAction::triggered, [this]() {
+            auto dirPath = QDir::currentPath();// to do: configure the output directory
+            auto dir = QDir(dirPath);
+            auto fullPath = dir.filePath("MJMODEL.TXT");
+            muJoCoOpenGlWindow->printModel(fullPath);
+        });
+
+        printDataAction = new QAction("Print Data", this);
+        connect(printDataAction, &QAction::triggered, [this]() {
+            auto dirPath = QDir::currentPath();// to do: configure the output directory
+            auto dir = QDir(dirPath);
+            auto fullPath = dir.filePath("MJDATA.TXT");
+            muJoCoOpenGlWindow->printData(fullPath);
+        });
+
         auto quitAction = new QAction("Quit", this);
         connect(quitAction, &QAction::triggered, []() {
             QApplication::quit();
@@ -117,6 +134,9 @@ public:
         fileMenu->addSeparator();
         fileMenu->addAction(saveXMLAction);
         fileMenu->addAction(saveMJBAction);
+        fileMenu->addSeparator();
+        fileMenu->addAction(printModelAction);
+        fileMenu->addAction(printDataAction);
         fileMenu->addSeparator();
         fileMenu->addAction(quitAction);
 
@@ -223,6 +243,9 @@ private:
         saveXMLAction->setEnabled(false);
         saveMJBAction->setEnabled(false);
 
+        printModelAction->setEnabled(false);
+        printDataAction->setEnabled(false);
+
         pauseAction->setEnabled(false);
         resetAction->setEnabled(false);
     }
@@ -233,6 +256,9 @@ private:
         screenshotAction->setEnabled(true);
         saveXMLAction->setEnabled(true);
         saveMJBAction->setEnabled(true);
+
+        printModelAction->setEnabled(true);
+        printDataAction->setEnabled(true);
 
         pauseAction->setEnabled(true);
         resetAction->setEnabled(true);
@@ -245,6 +271,9 @@ private:
     QAction *screenshotAction;
     QAction *saveXMLAction;
     QAction *saveMJBAction;
+
+    QAction *printModelAction;
+    QAction *printDataAction;
 
     QAction *pauseAction;
     QAction *resetAction;

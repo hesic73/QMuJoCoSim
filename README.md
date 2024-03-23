@@ -37,6 +37,7 @@ cmake --build . --config Release
 
 - [x] drag and drop
 - [x] screenshot
+- [x] print model/data
 - [x] toggling OpenGL Effects
 - [x] free camera control
 - [ ] free camera align
