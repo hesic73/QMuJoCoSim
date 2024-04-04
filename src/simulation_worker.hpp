@@ -10,6 +10,12 @@
 #include <condition_variable>
 #include "mujoco/mujoco.h"
 
+// MuJoCo官方的simulate的实现是：while loop每次busy wait/ sleep for 1ms
+// 然后根据时间判断是否需要step
+
+constexpr double syncMisalign = 0.1;
+
+
 class SimulationWorker {
 public:
     SimulationWorker(mjModel *model, mjData *data, int fps = 60)
@@ -31,42 +37,73 @@ public:
     }
 
     void startSimulationLoop() {
-        std::cout << "startSimulationLoop begins." << std::endl;
+        std::cout << "Simulation loop starts." << std::endl;
 
-        terminateRequested = false;
+        // CPU-sim synchronization point
+        auto syncCPU = std::chrono::high_resolution_clock::now();
+        mjtNum syncSim = 0;
 
-        std::chrono::time_point<std::chrono::high_resolution_clock> begin;
 
-        while (!terminateRequested) {
+        while (!terminateRequested.load()) {
+            double elapsedSim;
 
+            // Check if the simulation should be paused and wait if so
             {
-                std::unique_lock<std::mutex> uniqueLock(mtx);
-                while (isSimulationPaused) {
-                    cv_pause.wait(uniqueLock);
+                std::unique_lock<std::mutex> lock(mtx);
+                cv_pause.wait(lock, [&] { return !isSimulationPaused; });
+
+                // Record CPU time at the start of the iteration
+                const auto startCPU = std::chrono::high_resolution_clock::now();
+
+                // Elapsed CPU and simulation time since last sync
+                const auto elapsedCPU = startCPU - syncCPU;
+                elapsedSim = d->time - syncSim;
+
+                // Calculate if misalignment condition is met
+                bool misaligned =
+                        std::abs(std::chrono::duration<double>(elapsedCPU).count() / slowdown - elapsedSim) >
+                        syncMisalign;
+
+                // Out-of-sync (for any reason): reset sync times, step
+                if (elapsedSim < 0 || elapsedCPU.count() < 0 || syncCPU.time_since_epoch().count() == 0 || misaligned) {
+                    // Re-sync
+                    syncCPU = startCPU;
+                    syncSim = d->time;
+
+                    // Run single step
+                    mj_step(m, d);
+                } else {
+                    bool firstStep = true;
+
+                    // In-sync: step until ahead of CPU
+                    while (std::chrono::duration<double>(elapsedCPU).count() / slowdown > elapsedSim) {
+                        mj_step(m, d);
+
+                        // Update elapsed simulation time
+                        double newElapsedSim = d->time - syncSim;
+
+                        // Measure slowdown on the first step if elapsed simulation time is non-zero
+                        if (firstStep && elapsedSim > 0) {
+                            measured_slowdown = std::chrono::duration<double>(elapsedCPU).count() / elapsedSim;
+                            firstStep = false;
+                        }
+
+                        elapsedSim = newElapsedSim;
+                    }
                 }
 
-                const mjtNum simStart = d->time;
-                begin = std::chrono::high_resolution_clock::now();
-                while (d->time - simStart < 1.0 / FPS) {
-                    mj_step(m, d);
-                }
             }
 
-            auto end = std::chrono::high_resolution_clock::now();
-
-            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-
-            // std::cout << "Duration: " << duration.count() << "ms" << std::endl;
-
-            if (duration < dt) {
-                std::this_thread::sleep_for(dt - duration);
-            } else {
-                std::cout << "Simulation pace is lagging behind real-time progression." << std::endl;
+            // Sleep or yield to maintain pace with real-time
+            if (busyWait) {
+                std::this_thread::yield();
+            } else { // If not busy waiting
+                std::this_thread::sleep_for(std::chrono::milliseconds(1)); // Adjust as needed for your application
             }
 
         }
 
-        std::cout << "startSimulationLoop ends." << std::endl;
+        std::cout << "Simulation loop ends." << std::endl;
     }
 
     void terminateSimulation() {
@@ -166,6 +203,28 @@ public:
         mjv_moveCamera(m, action, relative_delta_x, relative_delta_y, scn, cam);
     }
 
+
+    void setSlowdown(double slowdown) {
+        this->slowdown = slowdown;
+    }
+
+    double getSlowDown() const {
+        return slowdown;
+    }
+
+    double getMeasuredSlowDown() const {
+        return measured_slowdown;
+    }
+
+    void setBusyWait(bool busyWait) {
+        this->busyWait = busyWait;
+    }
+
+
+    bool getBusyWait() const {
+        return busyWait;
+    }
+
 private:
     void cleanup() {
         if (d) {
@@ -190,6 +249,10 @@ private:
     std::mutex mtx;
     std::condition_variable cv_pause;
 
+
+    std::atomic<double> slowdown = 1.0;
+    std::atomic<double> measured_slowdown = 1.0;
+    std::atomic<bool> busyWait = false;
 };
 
 #endif //QMUJOCOSIM_SIMULATION_WORKER_HPP

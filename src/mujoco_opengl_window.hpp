@@ -20,6 +20,7 @@
 #include <memory>
 #include <cstring>
 #include <algorithm>
+#include <array>
 
 
 #include "simulation_worker.hpp"
@@ -177,6 +178,23 @@ public slots:
         opt.flags[flag] = value;
     }
 
+    /**
+     * change the slowdown level.
+     * @param increment +1/-1
+     */
+    void changeSlowDown(int increment) {
+
+        if (simulationWorker.isModelDataNull()) {
+            return;
+        }
+
+        static constexpr int lengthOfPercentRealTime = static_cast<int>(percentRealTime.size());
+
+        slowdown_index = std::clamp(slowdown_index + increment, 0, lengthOfPercentRealTime - 1);
+
+        simulationWorker.setSlowdown(100 / percentRealTime[slowdown_index]);
+    }
+
 signals:
 
     void loadModelSuccess();
@@ -228,6 +246,34 @@ protected:
             mjr_overlay(mjFONT_BIG, mjGRID_TOP, viewport, "PAUSE", nullptr,
                         &con);
         }
+
+        {
+            float desiredRealtime = percentRealTime[slowdown_index];
+            float actualRealtime = 100 / simulationWorker.getMeasuredSlowDown();
+
+            // if running, check for misalignment of more than 10%
+            float realtime_offset = mju_abs(actualRealtime - desiredRealtime);
+            bool misaligned = (!simulationWorker.isPaused()) && realtime_offset > 0.1 * desiredRealtime;
+
+            // make realtime overlay label
+            char rtlabel[30] = {'\0'};
+            if (desiredRealtime != 100.0 || misaligned) {
+                // print desired realtime
+                int labelsize = std::snprintf(rtlabel, sizeof(rtlabel), "%g%%", desiredRealtime);
+
+                // if misaligned, append to label
+                if (misaligned) {
+                    std::snprintf(rtlabel + labelsize, sizeof(rtlabel) - labelsize, " (%-4.1f%%)", actualRealtime);
+                }
+            }
+
+            // show real-time overlay
+            if (rtlabel[0]) {
+                mjr_overlay(mjFONT_BIG, mjGRID_TOPLEFT, viewport, rtlabel, nullptr,
+                            &con);
+            }
+        }
+
     }
 
 
@@ -303,6 +349,15 @@ private:
     QPoint dragStartPosition;
     Qt::MouseButton dragButton;
     Qt::KeyboardModifiers modifiers;
+
+    static constexpr std::array<float, 31> percentRealTime = {
+            100, 80, 66, 50, 40, 33, 25, 20, 16, 13,
+            10, 8, 6.6, 5.0, 4, 3.3, 2.5, 2, 1.6, 1.3,
+            1, .8, .66, .5, .4, .33, .25, .2, .16, .13,
+            .1
+    };
+
+    int slowdown_index = 0;
 };
 
 #endif //QMUJOCOSIM_MUJOCO_OPENGL_WINDOW_HPP

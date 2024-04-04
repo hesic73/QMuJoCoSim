@@ -71,9 +71,26 @@ protected:
                 auto dropEvent = dynamic_cast<QDropEvent *>(event);
                 this->dropEvent(dropEvent);
                 return true; // Event is handled
+            } else if (event->type() == QEvent::KeyPress) {
+                auto keyPressEvent = dynamic_cast<QKeyEvent *>(event);
+                this->keyPressEvent(keyPressEvent);
+                return true;
             }
         }
         return QWidget::eventFilter(watched, event);
+    }
+
+    void keyPressEvent(QKeyEvent *event) override {
+        switch (event->key()) {
+            case Qt::Key_Plus:
+                window->changeSlowDown(-1);
+                break;
+            case Qt::Key_Minus:
+                window->changeSlowDown(1);
+                break;
+            default:
+                QWidget::keyPressEvent(event); // Call base class handler if you don't handle the event
+        }
     }
 
 private:

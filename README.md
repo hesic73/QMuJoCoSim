@@ -5,14 +5,15 @@
 
 ## Controls Guide
 
-| Function   | Key/Action           |
-| ---------- | -------------------- |
-| Open       | Ctrl + O             |
-| Quit       | Ctrl + Q             |
-| Play/Pause | Space                |
-| Zoom       | Scroll / Middle drag |
-| View Orbit | Left drag            |
-| View Pan   | Shift + Right Drag   |
+| Function        | Key/Action           |
+| --------------- | -------------------- |
+| Open            | Ctrl + O             |
+| Quit            | Ctrl + Q             |
+| Play / Pause    | Space                |
+| Speed Up / Down | + / -                |
+| Zoom            | Scroll / Middle drag |
+| View Orbit      | Left drag            |
+| View Pan        | Shift + Right Drag   |
 
 ## Build Specifications
 
@@ -42,16 +43,16 @@ cmake --build . --config Release
 - [x] free camera control
 - [ ] free camera align
 - [x] toggling model elements
+- [x] slowdown
 - [ ] headlight control
 
 ### Low priority
 
-- [ ] Revise simulation and rendering synchronization: the simulation thread scheduled at 60 FPS, triggering the rendering process immediately upon each simulation cycle's completion.
 - [ ] Implement options for users to specify directories for screenshots and model storage.
 
 ## Known Issues
 
-- Currently, the rendering operates at a constant FPS, based on the presumption that **simulation speed surpasses real-time**. Should this not be the case, the program could become overloaded. Implementing buffer strategies might be a potential solution.
+- ~~Currently, the rendering operates at a constant FPS, based on the presumption that **simulation speed surpasses real-time**. Should this not be the case, the program could become overloaded.~~ Updated the simulation loop to mirror the approach used in MuJoCo's official simulation example.
 
 ## Reference
 
