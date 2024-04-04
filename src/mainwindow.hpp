@@ -76,6 +76,8 @@ public:
         closeAction = new QAction("Close", this);
         connect(closeAction, &QAction::triggered, [this]() {
             muJoCoOpenGlWindow->closeModel();
+
+            updateControlPanelWhenModelIsNull();
             actionSetEnabledWhenModelIsNull();
         });
 
@@ -166,6 +168,7 @@ public:
 
 
         connect(muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::loadModelSuccess, [this]() {
+            updateControlPanelWhenModelIsNotNull();
             actionSetEnabledWhenModelIsNotNull();
         });
 
@@ -234,6 +237,19 @@ private:
                 [this](mjtVisFlag flag, bool value) {
                     muJoCoOpenGlWindow->setModelElement(flag, value);
                 });
+    }
+
+    void updateControlPanelWhenModelIsNull() {
+        controlPanel->simulationSection->resetWhenModelIsNull();
+        controlPanel->renderingSection->hide();
+    }
+
+    void updateControlPanelWhenModelIsNotNull() {
+        controlPanel->renderingSection->show();
+        controlPanel->simulationSection->resetWhenModelIsNotNull(muJoCoOpenGlWindow->getSimulationHistoryBufferSize(),
+                                                                 [](int value) {
+                                                                     qDebug() << value;
+                                                                 });
     }
 
     void actionSetEnabledWhenModelIsNull() {

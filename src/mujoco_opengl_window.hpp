@@ -39,7 +39,7 @@ public:
     explicit MuJoCoOpenGLWindow(mjvCamera cam, mjvOption opt, mjvPerturb pert, mjrContext con,
                                 int fps = 60)
             : QOpenGLWindow(),
-              simulationWorker(nullptr, nullptr, fps),
+              simulationWorker(nullptr, nullptr),
               cam(cam),
               opt(opt),
               pert(pert),
@@ -77,6 +77,9 @@ public:
         return opt.flags[flag];
     }
 
+    int getSimulationHistoryBufferSize() const {
+        return simulationWorker.getHistoryBufferSize();
+    }
 
 public slots:
 

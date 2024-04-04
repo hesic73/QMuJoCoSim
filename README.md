@@ -45,6 +45,7 @@ cmake --build . --config Release
 - [x] toggling model elements
 - [x] slowdown
 - [ ] headlight control
+- [ ] history
 
 ### Low priority
 

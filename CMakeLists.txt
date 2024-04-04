@@ -41,6 +41,8 @@ qt_add_executable(QMuJoCoSim
         src/panel_sections/rendering_section.hpp
         src/my_widgets/toggling_button.hpp
         src/utils.hpp
+        src/history_buffer.hpp
+        src/panel_sections/simulation_section.hpp
 )
 
 qt_add_resources(QMuJoCoSim "resources" # This is an arbitrary identifier

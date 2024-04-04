@@ -3,29 +3,29 @@
 
 #include <iostream>
 #include <chrono>
-
 #include <atomic>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+
+
 #include "mujoco/mujoco.h"
 
-// MuJoCo官方的simulate的实现是：while loop每次busy wait/ sleep for 1ms
-// 然后根据时间判断是否需要step
+
+#include "history_buffer.hpp"
+
 
 constexpr double syncMisalign = 0.1;
 
 
 class SimulationWorker {
 public:
-    SimulationWorker(mjModel *model, mjData *data, int fps = 60)
+    SimulationWorker(mjModel *model, mjData *data)
             :
             isSimulationPaused(false),
             terminateRequested(false),
             m(model),
-            d(data),
-            FPS(fps),
-            dt(std::chrono::milliseconds{1000 / fps}) {}
+            d(data) {}
 
     ~SimulationWorker() {
         // Signal for simulation to terminate
@@ -37,6 +37,7 @@ public:
     }
 
     void startSimulationLoop() {
+        terminateRequested = false;
         std::cout << "Simulation loop starts." << std::endl;
 
         // CPU-sim synchronization point
@@ -64,6 +65,8 @@ public:
                         std::abs(std::chrono::duration<double>(elapsedCPU).count() / slowdown - elapsedSim) >
                         syncMisalign;
 
+                bool stepped = false;
+
                 // Out-of-sync (for any reason): reset sync times, step
                 if (elapsedSim < 0 || elapsedCPU.count() < 0 || syncCPU.time_since_epoch().count() == 0 || misaligned) {
                     // Re-sync
@@ -72,12 +75,14 @@ public:
 
                     // Run single step
                     mj_step(m, d);
+                    stepped = true;
                 } else {
                     bool firstStep = true;
 
                     // In-sync: step until ahead of CPU
                     while (std::chrono::duration<double>(elapsedCPU).count() / slowdown > elapsedSim) {
                         mj_step(m, d);
+                        stepped = true;
 
                         // Update elapsed simulation time
                         double newElapsedSim = d->time - syncSim;
@@ -90,6 +95,10 @@ public:
 
                         elapsedSim = newElapsedSim;
                     }
+                }
+
+                if (stepped) {
+                    historyBuffer.addToHistory(m, d);
                 }
 
             }
@@ -122,6 +131,9 @@ public:
     void resetSimulation() {
         std::lock_guard<std::mutex> lockGuard(mtx);
         mj_resetData(m, d);
+        mj_forward(m, d);
+
+        historyBuffer.setScrubIndex(0);
     }
 
     void makeContext(mjrContext *con) {
@@ -139,8 +151,7 @@ public:
         return m == nullptr || d == nullptr;
     }
 
-    // While access to `isSimulationPaused` is not thread-safe,
-    // its simple boolean nature minimizes the risk of serious concurrency issues.
+
     bool isPaused() const { return isSimulationPaused; }
 
     void replace(mjModel *newModel) {
@@ -148,6 +159,10 @@ public:
         cleanup();
         m = newModel;
         d = mj_makeData(m);
+
+        mj_forward(m, d);
+
+        historyBuffer.initialize(m, d);
     }
 
     void close() {
@@ -220,9 +235,13 @@ public:
         this->busyWait = busyWait;
     }
 
-
     bool getBusyWait() const {
         return busyWait;
+    }
+
+
+    int getHistoryBufferSize() const {
+        return historyBuffer.size();
     }
 
 private:
@@ -238,13 +257,11 @@ private:
     }
 
 
-    bool isSimulationPaused;
+    std::atomic_bool isSimulationPaused;
     std::atomic_bool terminateRequested;
     mjModel *m;
     mjData *d;
 
-    const int FPS;
-    const std::chrono::milliseconds dt;
 
     std::mutex mtx;
     std::condition_variable cv_pause;
@@ -252,7 +269,10 @@ private:
 
     std::atomic<double> slowdown = 1.0;
     std::atomic<double> measured_slowdown = 1.0;
-    std::atomic<bool> busyWait = false;
+    std::atomic_bool busyWait = false;
+
+
+    HistoryBuffer historyBuffer;
 };
 
 #endif //QMUJOCOSIM_SIMULATION_WORKER_HPP

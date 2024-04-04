@@ -7,6 +7,7 @@
 #include <QVBoxLayout>
 
 #include "panel_sections/rendering_section.hpp"
+#include "panel_sections/simulation_section.hpp"
 
 class ControlPanel : public QWidget {
 public:
@@ -14,8 +15,12 @@ public:
         auto layout = new QVBoxLayout;
         layout->setAlignment(Qt::AlignTop);
 
+        simulationSection = new SimulationSection(this);
+        layout->addWidget(simulationSection);
+
         renderingSection = new RenderingSection(this);
         layout->addWidget(renderingSection);
+        renderingSection->hide();
 
         setLayout(layout);
     }
@@ -23,6 +28,7 @@ public:
 
 public:
     RenderingSection *renderingSection;
+    SimulationSection *simulationSection;
 
 };
 

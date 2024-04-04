@@ -7,8 +7,6 @@
 #include <QGroupBox>
 #include <QPushButton>
 
-#include <QLabel>
-#include <QPixmap>
 
 #include "collapsible_section.h"
 
