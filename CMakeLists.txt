@@ -43,6 +43,7 @@ qt_add_executable(QMuJoCoSim
         src/utils.hpp
         src/history_buffer.hpp
         src/panel_sections/simulation_section.hpp
+        src/my_widgets/label_slider.hpp
 )
 
 qt_add_resources(QMuJoCoSim "resources" # This is an arbitrary identifier

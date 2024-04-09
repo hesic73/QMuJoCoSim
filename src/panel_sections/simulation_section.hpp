@@ -12,8 +12,11 @@
 
 
 #include <QSlider>
+#include <QLabel>
 
 #include "collapsible_section.h"
+
+#include "my_widgets/label_slider.hpp"
 
 class SimulationSection : public CollapsibleSection {
 Q_OBJECT
@@ -24,14 +27,19 @@ public:
         auto myLayout = new QVBoxLayout;
         myLayout->setContentsMargins(0, 0, 0, 0);
 
-        historySlider = new QSlider(this);
-        historySlider->setOrientation(Qt::Orientation::Horizontal);
-        historySlider->setInvertedAppearance(true);
+        historyLabel = new QLabel(this);
+        historyLabel->setText("History");
+        myLayout->addWidget(historyLabel);
 
-        historySlider->setEnabled(false);
+        labelSlider = new LabelSlider(this, Qt::darkRed, Qt::lightGray, [](int value) {
+            return QString::number(-value);
+        });
+        labelSlider->setInvertedAppearance(true);
+
+        labelSlider->setEnabled(false);
 
 
-        myLayout->addWidget(historySlider);
+        myLayout->addWidget(labelSlider);
 
         setContentLayout(myLayout);
 
@@ -39,24 +47,36 @@ public:
 
     void
     resetWhenModelIsNotNull(int simulationHistoryBufferSize, std::function<void(int)> onHistorySliderValueChanged) {
-        historySlider->setEnabled(true);
-        historySlider->setValue(0);
-        historySlider->setRange(0, simulationHistoryBufferSize - 1);
+        labelSlider->setEnabled(true);
+        labelSlider->setValue(0);
+        labelSlider->setRange(0, simulationHistoryBufferSize - 1);
 
 
-        connect(historySlider, &QSlider::valueChanged, onHistorySliderValueChanged);
+        connect(labelSlider, &LabelSlider::valueChanged, onHistorySliderValueChanged);
     }
 
 
     void resetWhenModelIsNull() {
-        historySlider->setEnabled(false);
-        disconnect(historySlider, &QSlider::valueChanged, nullptr, nullptr);
-        historySlider->setValue(0);
+        labelSlider->setEnabled(false);
+        disconnect(labelSlider, &LabelSlider::valueChanged, nullptr, nullptr);
+        labelSlider->setValue(0);
     }
 
+public slots:
+
+    void onKeyLeftPressed() {
+        if (!labelSlider->isEnabled()) return;
+        labelSlider->setValue(labelSlider->value() + 1);
+    };
+
+    void onKeyRightPressed() {
+        if (!labelSlider->isEnabled()) return;
+        labelSlider->setValue(labelSlider->value() - 1);
+    }
 
 private:
-    QSlider *historySlider;
+    QLabel *historyLabel;
+    LabelSlider *labelSlider;
 };
 
 #endif //QMUJOCOSIM_SIMULATION_SECTION_HPP

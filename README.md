@@ -53,6 +53,8 @@ cmake --build . --config Release
 
 ## Known Issues
 
+- Keyboard focus. As we use `QOpenGLWindow` to embed MuJoCo, handling key press events is a bit tricky. Right now, almost all key presses are caught by the simulation window instead of the main window.
+
 - ~~Currently, the rendering operates at a constant FPS, based on the presumption that **simulation speed surpasses real-time**. Should this not be the case, the program could become overloaded.~~ Updated the simulation loop to mirror the approach used in MuJoCo's official simulation example.
 
 ## Reference

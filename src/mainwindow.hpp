@@ -48,11 +48,14 @@ public:
         scrollArea->setFixedWidth(250);
         scrollArea->setWidget(controlPanel);
 
+
+        myWindowContainer = new MyWindowContainer(muJoCoOpenGlWindow);
+
         auto layout = new QHBoxLayout;
         layout->setSpacing(0);
         layout->setContentsMargins(0, 0, 0, 0);
         layout->addWidget(scrollArea);
-        layout->addWidget(new MyWindowContainer(muJoCoOpenGlWindow));
+        layout->addWidget(myWindowContainer);
 
         initializeRenderingEffectsButtonsChecked();
         initializeModeElementsButtonsChecked();
@@ -61,6 +64,70 @@ public:
         widget->setLayout(layout);
         setCentralWidget(widget);
 
+
+        makeFileMenu();
+        makeSimulationMenu();
+
+
+        // load
+        connect(muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::loadModelSuccess, [this]() {
+            updateControlPanelWhenModelIsNotNull();
+            actionSetEnabledWhenModelIsNotNull();
+        });
+        connect(muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::loadModelFailure, [this](bool isNull) {
+            if (isNull) {
+                actionSetEnabledWhenModelIsNull();
+                updateControlPanelWhenModelIsNull();
+            } else {
+                actionSetEnabledWhenModelIsNotNull();
+                updateControlPanelWhenModelIsNotNull();
+            }
+        });
+
+
+        // key left/right press
+        connect(myWindowContainer, &MyWindowContainer::keyLeftPressed, [this]() {
+            controlPanel->simulationSection->onKeyLeftPressed();
+        });
+        connect(myWindowContainer, &MyWindowContainer::keyRightPressed, [this]() {
+            controlPanel->simulationSection->onKeyRightPressed();
+        });
+
+
+        actionSetEnabledWhenModelIsNull();
+        updateControlPanelWhenModelIsNull();
+    }
+
+private slots:
+
+    void shootScreen() {
+        QScreen *screen = QGuiApplication::primaryScreen();
+        QPixmap pixmap = screen->grabWindow(muJoCoOpenGlWindow->winId());
+        QString path = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+        if (path.isEmpty())
+            path = QDir::currentPath();
+
+        // Get current date and time
+        QDateTime now = QDateTime::currentDateTime();
+        // Format date and time to string with desired format
+        QString dateTimeString = now.toString("yyyy_MM_dd_hh_mm_ss_zzz");
+
+        // Append formatted date and time to filename
+        path += QString("/screenshot_%1.png").arg(dateTimeString);
+        if (!pixmap.save(path)) {
+            QMessageBox::warning(this, tr("Save Error"), tr("The image could not be saved to \"%1\".")
+                    .arg(QDir::toNativeSeparators(path)));
+        } else {
+            qDebug() << "Screenshot saved to" << QDir::toNativeSeparators(path);
+        }
+    };
+
+
+protected:
+
+private:
+
+    void makeFileMenu() {
         auto *openAction = new QAction("&Open", this);
         connect(openAction, &QAction::triggered, [this]() {
             QString defaultDir = QDir::currentPath(); // Get the current working directory
@@ -145,7 +212,10 @@ public:
 
         fileMenu->setStyleSheet("QMenu::item:disabled { background-color: #f0f0f0; color: #a0a0a0; }");
 
+    }
 
+
+    void makeSimulationMenu() {
         // Simulation menu
         auto *simulationMenu = menuBar()->addMenu("&Simulation");
         simulationMenu->setStyleSheet("QMenu::item:disabled { background-color: #f0f0f0; color: #a0a0a0; }");
@@ -165,51 +235,8 @@ public:
         connect(resetAction, &QAction::triggered, muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::resetSimulation);
 
         resetAction->setShortcut(QKeySequence("Ctrl+R"));
-
-
-        connect(muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::loadModelSuccess, [this]() {
-            updateControlPanelWhenModelIsNotNull();
-            actionSetEnabledWhenModelIsNotNull();
-        });
-
-        connect(muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::loadModelFailure, [this](bool isNull) {
-            if (isNull)
-                actionSetEnabledWhenModelIsNull();
-            else
-                actionSetEnabledWhenModelIsNotNull();
-        });
-
-        actionSetEnabledWhenModelIsNull();
     }
 
-private slots:
-
-    void shootScreen() {
-        QScreen *screen = QGuiApplication::primaryScreen();
-        QPixmap pixmap = screen->grabWindow(muJoCoOpenGlWindow->winId());
-        QString path = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
-        if (path.isEmpty())
-            path = QDir::currentPath();
-
-        // Get current date and time
-        QDateTime now = QDateTime::currentDateTime();
-        // Format date and time to string with desired format
-        QString dateTimeString = now.toString("yyyy_MM_dd_hh_mm_ss_zzz");
-
-        // Append formatted date and time to filename
-        path += QString("/screenshot_%1.png").arg(dateTimeString);
-        if (!pixmap.save(path)) {
-            QMessageBox::warning(this, tr("Save Error"), tr("The image could not be saved to \"%1\".")
-                    .arg(QDir::toNativeSeparators(path)));
-        } else {
-            qDebug() << "Screenshot saved to" << QDir::toNativeSeparators(path);
-        }
-    };
-
-
-protected:
-
-private:
     void initializeRenderingEffectsButtonsChecked() {
 
         for (int i = 0; i < mjtRndFlag::mjNRNDFLAG; i++) {
@@ -280,6 +307,8 @@ private:
         resetAction->setEnabled(true);
     }
 
+
+    MyWindowContainer *myWindowContainer;
     MuJoCoOpenGLWindow *muJoCoOpenGlWindow;
     ControlPanel *controlPanel;
 

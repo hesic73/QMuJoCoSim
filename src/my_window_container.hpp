@@ -13,6 +13,8 @@
 
 
 class MyWindowContainer : public QWidget {
+Q_OBJECT
+
 public:
     explicit MyWindowContainer(MuJoCoOpenGLWindow *window, QWidget *parent = nullptr) : QWidget(parent) {
         setAcceptDrops(true);
@@ -26,6 +28,12 @@ public:
         // Install event filter on the QWindow
         window->installEventFilter(this);
     }
+
+signals:
+
+    void keyLeftPressed();
+
+    void keyRightPressed();
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override {
@@ -87,6 +95,13 @@ protected:
                 break;
             case Qt::Key_Minus:
                 window->changeSlowDown(1);
+                break;
+
+            case Qt::Key_Left:
+                emit keyLeftPressed();
+                break;
+            case Qt::Key_Right:
+                emit keyRightPressed();
                 break;
             default:
                 QWidget::keyPressEvent(event); // Call base class handler if you don't handle the event
