@@ -85,12 +85,17 @@ public:
         });
 
 
-        // key left/right press
+        // History Buffer
+
         connect(myWindowContainer, &MyWindowContainer::keyLeftPressed, [this]() {
             controlPanel->simulationSection->onKeyLeftPressed();
         });
         connect(myWindowContainer, &MyWindowContainer::keyRightPressed, [this]() {
             controlPanel->simulationSection->onKeyRightPressed();
+        });
+
+        connect(muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::isPauseChanged, [this](bool isPause) {
+            controlPanel->simulationSection->setSliderValueNoSignal(0);
         });
 
 
@@ -274,9 +279,12 @@ private:
     void updateControlPanelWhenModelIsNotNull() {
         controlPanel->renderingSection->show();
         controlPanel->simulationSection->resetWhenModelIsNotNull(muJoCoOpenGlWindow->getSimulationHistoryBufferSize(),
-                                                                 [](int value) {
-                                                                     qDebug() << value;
-                                                                 });
+                                                                 [this](int value) {
+                                                                     muJoCoOpenGlWindow->changeHistoryBufferScrubIndex(
+                                                                             -value);
+                                                                 }, [this]() {
+                    this->muJoCoOpenGlWindow->simulationStepForward();
+                });
     }
 
     void actionSetEnabledWhenModelIsNull() {

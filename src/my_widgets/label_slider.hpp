@@ -56,6 +56,11 @@ public slots:
         emit valueChanged(m_value);
     }
 
+    void setValueNoSignal(int value) {
+        m_value = std::clamp(value, m_minimum, m_maximum);
+        updateDisplay();
+    }
+
 signals:
 
     void valueChanged(int newValue);

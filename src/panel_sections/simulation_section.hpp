@@ -3,6 +3,7 @@
 
 
 #include <functional>
+#include <mutex>
 
 #include <QGridLayout>
 #include <QVBoxLayout>
@@ -46,13 +47,20 @@ public:
     }
 
     void
-    resetWhenModelIsNotNull(int simulationHistoryBufferSize, std::function<void(int)> onHistorySliderValueChanged) {
+    resetWhenModelIsNotNull(int simulationHistoryBufferSize, std::function<void(int)> onHistorySliderValueChanged,
+                            std::function<void()> onValueIsZeroAndKeyRightPressed) {
         labelSlider->setEnabled(true);
         labelSlider->setValue(0);
         labelSlider->setRange(0, simulationHistoryBufferSize - 1);
 
 
         connect(labelSlider, &LabelSlider::valueChanged, onHistorySliderValueChanged);
+
+        {
+            std::unique_lock<std::mutex> lock(mtx);
+            _onValueIsZeroAndKeyRightPressed = onValueIsZeroAndKeyRightPressed;
+        }
+
     }
 
 
@@ -60,23 +68,51 @@ public:
         labelSlider->setEnabled(false);
         disconnect(labelSlider, &LabelSlider::valueChanged, nullptr, nullptr);
         labelSlider->setValue(0);
+
+
+        {
+            std::unique_lock<std::mutex> lock(mtx);
+            _onValueIsZeroAndKeyRightPressed = nullptr;
+        }
     }
+
 
 public slots:
 
+
+    void setSliderValueNoSignal(int value) {
+        labelSlider->setValueNoSignal(value);
+    };
+
+    // Step backward.
     void onKeyLeftPressed() {
         if (!labelSlider->isEnabled()) return;
         labelSlider->setValue(labelSlider->value() + 1);
     };
 
+
+    // Step forward. This is a bit tricky, as it may calculate the new state and add it to the history buffer.
     void onKeyRightPressed() {
         if (!labelSlider->isEnabled()) return;
-        labelSlider->setValue(labelSlider->value() - 1);
+        if (labelSlider->value() != 0) {
+            labelSlider->setValue(labelSlider->value() - 1);
+        } else {
+            {
+                std::unique_lock<std::mutex> lock(mtx);
+                if (_onValueIsZeroAndKeyRightPressed) {
+                    _onValueIsZeroAndKeyRightPressed();
+                }
+            }
+        }
+
     }
 
 private:
     QLabel *historyLabel;
     LabelSlider *labelSlider;
+
+    std::mutex mtx;
+    std::function<void()> _onValueIsZeroAndKeyRightPressed = nullptr;
 };
 
 #endif //QMUJOCOSIM_SIMULATION_SECTION_HPP

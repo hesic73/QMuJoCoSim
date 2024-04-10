@@ -7,7 +7,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
-
+#include <cassert>
 
 #include "mujoco/mujoco.h"
 
@@ -124,6 +124,7 @@ public:
         std::lock_guard<std::mutex> lockGuard(mtx);
         isSimulationPaused = pause;
         if (!pause) {
+            historyBuffer.setScrubIndex(0);
             cv_pause.notify_one();
         }
     }
@@ -132,7 +133,6 @@ public:
         std::lock_guard<std::mutex> lockGuard(mtx);
         mj_resetData(m, d);
         mj_forward(m, d);
-
         historyBuffer.setScrubIndex(0);
     }
 
@@ -243,6 +243,29 @@ public:
     int getHistoryBufferSize() const {
         return historyBuffer.size();
     }
+
+
+    int getHistoryBufferScrubIndex() const {
+        return historyBuffer.getScrubIndex();
+    }
+
+    void setScrubIndex(int scrub_index) {
+        setSimulationPaused(true);
+        historyBuffer.setScrubIndex(scrub_index);
+        {
+            std::lock_guard<std::mutex> lockGuard(mtx);
+            historyBuffer.loadScrubState(m, d);
+        }
+    }
+
+
+    void stepForward() {
+        assert(isPaused());
+        std::lock_guard<std::mutex> lockGuard(mtx);
+        mj_step(m, d);
+        historyBuffer.addToHistory(m, d);
+    }
+
 
 private:
     void cleanup() {

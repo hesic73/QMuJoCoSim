@@ -5,7 +5,7 @@
 #include <vector>
 #include <cstdint>
 #include <atomic>
-
+#include <cassert>
 
 #include "mujoco/mujoco.h"
 

@@ -85,6 +85,7 @@ public slots:
 
     void pauseSimulation(bool pause) {
         simulationWorker.setSimulationPaused(pause);
+        emit isPauseChanged(pause);
     }
 
     void resetSimulation() {
@@ -198,11 +199,22 @@ public slots:
         simulationWorker.setSlowdown(100 / percentRealTime[slowdown_index]);
     }
 
+    void changeHistoryBufferScrubIndex(int index) {
+        simulationWorker.setScrubIndex(index);
+    }
+
+    void simulationStepForward() {
+        simulationWorker.stepForward();
+    }
+
 signals:
 
     void loadModelSuccess();
 
     void loadModelFailure(bool isNull);
+
+
+    void isPauseChanged(bool isPause);
 
 protected:
     void initializeGL() override {
@@ -246,7 +258,14 @@ protected:
         mjr_render(viewport, &scn, &con);
 
         if (simulationWorker.isPaused()) {
-            mjr_overlay(mjFONT_BIG, mjGRID_TOP, viewport, "PAUSE", nullptr,
+            QString s;
+            if (simulationWorker.getHistoryBufferScrubIndex() == 0) {
+                s = "PAUSE";
+            } else {
+                s = QString("PAUSE (%1)").arg(simulationWorker.getHistoryBufferScrubIndex());
+            }
+
+            mjr_overlay(mjFONT_BIG, mjGRID_TOP, viewport, s.toStdString().c_str(), nullptr,
                         &con);
         }
 

@@ -5,15 +5,16 @@
 
 ## Controls Guide
 
-| Function        | Key/Action           |
-| --------------- | -------------------- |
-| Open            | Ctrl + O             |
-| Quit            | Ctrl + Q             |
-| Play / Pause    | Space                |
-| Speed Up / Down | + / -                |
-| Zoom            | Scroll / Middle drag |
-| View Orbit      | Left drag            |
-| View Pan        | Shift + Right Drag   |
+| Function            | Key/Action           |
+| ------------------- | -------------------- |
+| Open                | Ctrl + O             |
+| Quit                | Ctrl + Q             |
+| Play / Pause        | Space                |
+| Speed Up / Down     | + / -                |
+| Step Back / Forward | Left / Right Arrow   |
+| Zoom                | Scroll / Middle drag |
+| View Orbit          | Left drag            |
+| View Pan            | Shift + Right Drag   |
 
 ## Build Specifications
 
@@ -45,7 +46,7 @@ cmake --build . --config Release
 - [x] toggling model elements
 - [x] slowdown
 - [ ] headlight control
-- [ ] history
+- [x] history buffer
 
 ### Low priority
 
@@ -53,7 +54,7 @@ cmake --build . --config Release
 
 ## Known Issues
 
-- Keyboard focus. As we use `QOpenGLWindow` to embed MuJoCo, handling key press events is a bit tricky. Right now, almost all key presses are caught by the simulation window instead of the main window.
+- As we use `QOpenGLWindow` to embed MuJoCo, handling key press events is a bit tricky. Right now, almost all key presses are caught by the simulation window instead of the main window.
 
 - ~~Currently, the rendering operates at a constant FPS, based on the presumption that **simulation speed surpasses real-time**. Should this not be the case, the program could become overloaded.~~ Updated the simulation loop to mirror the approach used in MuJoCo's official simulation example.
 
