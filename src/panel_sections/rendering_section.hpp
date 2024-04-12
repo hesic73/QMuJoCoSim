@@ -9,9 +9,7 @@
 
 
 #include "collapsible_section.h"
-
-
-#include "my_widgets/toggling_button.hpp"
+#include "custom_widgets/toggling_button.hpp"
 
 class ModelElements : public QGroupBox {
 Q_OBJECT

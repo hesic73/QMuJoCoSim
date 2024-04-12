@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QCoreApplication>
 #include <QSurfaceFormat>
 #include <QColorSpace>
 #include "mainwindow.hpp"
@@ -32,8 +33,9 @@ static void set_surface_format() {
 
 int main(int argc, char *argv[]) {
     check_mujoco_version();
-
     set_surface_format();
+
+    QCoreApplication::setApplicationName("QMuJoCoSim");
 
     QApplication app(argc, argv);
 

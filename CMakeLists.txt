@@ -39,11 +39,13 @@ qt_add_executable(QMuJoCoSim
         src/panel_sections/collapsible_section.cpp
         src/control_panel.hpp
         src/panel_sections/rendering_section.hpp
-        src/my_widgets/toggling_button.hpp
-        src/utils.hpp
-        src/history_buffer.hpp
+        src/custom_widgets/toggling_button.hpp
+        src/core/simulation_worker.hpp
+        src/core/history_buffer.hpp
         src/panel_sections/simulation_section.hpp
-        src/my_widgets/label_slider.hpp
+        src/custom_widgets/label_slider.hpp
+        src/settings_dialog.hpp
+        src/custom_widgets/directory_selector.hpp
 )
 
 qt_add_resources(QMuJoCoSim "resources" # This is an arbitrary identifier

@@ -47,10 +47,7 @@ cmake --build . --config Release
 - [x] slowdown
 - [ ] headlight control
 - [x] history buffer
-
-### Low priority
-
-- [ ] Implement options for users to specify directories for screenshots and model storage.
+- [x] settings dialog
 
 ## Known Issues
 

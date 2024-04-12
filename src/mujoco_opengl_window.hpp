@@ -23,9 +23,25 @@
 #include <array>
 
 
-#include "simulation_worker.hpp"
+#include "core/simulation_worker.hpp"
 
-#include "utils.hpp"
+
+inline mjtMouse get_mjtMouse(Qt::MouseButton dragButton, Qt::KeyboardModifiers modifiers) {
+    if (dragButton == Qt::LeftButton && (modifiers & Qt::ShiftModifier)) {
+        return mjtMouse::mjMOUSE_ROTATE_H;
+    } else if (dragButton == Qt::LeftButton && !(modifiers & Qt::ShiftModifier)) {
+        return mjtMouse::mjMOUSE_ROTATE_V;
+    } else if (dragButton == Qt::RightButton && (modifiers & Qt::ShiftModifier)) {
+        return mjtMouse::mjMOUSE_MOVE_H;
+    } else if (dragButton == Qt::RightButton && !(modifiers & Qt::ShiftModifier)) {
+        return mjtMouse::mjMOUSE_MOVE_V;
+    } else if (dragButton == Qt::MiddleButton) {
+        return mjtMouse::mjMOUSE_ZOOM;
+    }
+    mju_warning("Unknown combination of dragButton and modifiers");
+    return mjtMouse::mjMOUSE_NONE;
+}
+
 
 static constexpr int MAX_GEOM = 2000;
 
@@ -36,15 +52,14 @@ public:
     /**
      * All structs are trivially-copiable (although copying is a bit expensive).
      */
-    explicit MuJoCoOpenGLWindow(mjvCamera cam, mjvOption opt, mjvPerturb pert, mjrContext con,
+    explicit MuJoCoOpenGLWindow(mjrContext con,
                                 int fps = 60)
             : QOpenGLWindow(),
               simulationWorker(nullptr, nullptr),
-              cam(cam),
-              opt(opt),
-              pert(pert),
               con(con) {
 
+        mjv_defaultCamera(&cam);
+        mjv_defaultOption(&opt);
         mjv_defaultPerturb(&pert);
         mjv_defaultScene(&scn);
         mjv_makeScene(nullptr, &scn, MAX_GEOM); // Allocate scene

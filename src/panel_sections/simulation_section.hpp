@@ -17,7 +17,7 @@
 
 #include "collapsible_section.h"
 
-#include "my_widgets/label_slider.hpp"
+#include "custom_widgets/label_slider.hpp"
 
 class SimulationSection : public CollapsibleSection {
 Q_OBJECT

@@ -14,10 +14,13 @@
 #include <QApplication>
 #include <QIcon>
 #include <QScrollArea>
+#include <QSettings>
 
 #include "mujoco_opengl_window.hpp"
 #include "my_window_container.hpp"
 #include "control_panel.hpp"
+
+#include "settings_dialog.hpp"
 
 class MainWindow : public QMainWindow {
 Q_OBJECT
@@ -25,21 +28,11 @@ Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr) : QMainWindow(parent) {
 
-
-        mjvCamera cam;
-        mjvOption opt;
-        mjvPerturb pert;
         mjrContext con; // Rendering context
-
-        mjv_defaultCamera(&cam);
-        mjv_defaultOption(&opt);
-        mjv_defaultPerturb(&pert);
-
         // it's crucial to initialize the context before we create the widget (but I don't know why).
         mjr_defaultContext(&con);
 
-
-        muJoCoOpenGlWindow = new MuJoCoOpenGLWindow(cam, opt, pert, con);
+        muJoCoOpenGlWindow = new MuJoCoOpenGLWindow(con);
 
 
         auto scrollArea = new QScrollArea(this);
@@ -108,9 +101,13 @@ private slots:
     void shootScreen() {
         QScreen *screen = QGuiApplication::primaryScreen();
         QPixmap pixmap = screen->grabWindow(muJoCoOpenGlWindow->winId());
-        QString path = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
-        if (path.isEmpty())
-            path = QDir::currentPath();
+
+
+        auto dirPath = settings.value("screenshot_directory",
+                                      QDir::currentPath()).toString();
+
+
+        auto dir = QDir(dirPath);
 
         // Get current date and time
         QDateTime now = QDateTime::currentDateTime();
@@ -118,7 +115,7 @@ private slots:
         QString dateTimeString = now.toString("yyyy_MM_dd_hh_mm_ss_zzz");
 
         // Append formatted date and time to filename
-        path += QString("/screenshot_%1.png").arg(dateTimeString);
+        auto path = dir.filePath(QString("screenshot_%1.png").arg(dateTimeString));
         if (!pixmap.save(path)) {
             QMessageBox::warning(this, tr("Save Error"), tr("The image could not be saved to \"%1\".")
                     .arg(QDir::toNativeSeparators(path)));
@@ -160,7 +157,8 @@ private:
 
         saveXMLAction = new QAction("Save XML", this);
         connect(saveXMLAction, &QAction::triggered, [this]() {
-            auto dirPath = QDir::currentPath();// to do: configure the output directory
+            auto dirPath = settings.value("xml_model_directory",
+                                          QDir::currentPath()).toString();
             auto dir = QDir(dirPath);
             auto fullPath = dir.filePath("mjmodel.xml");
             qDebug() << QString("Attempting to save the model in XML format to the following path: '%1'").arg(fullPath);
@@ -170,7 +168,8 @@ private:
 
         saveMJBAction = new QAction("Save MJB", this);
         connect(saveMJBAction, &QAction::triggered, [this]() {
-            auto dirPath = QDir::currentPath();// to do: configure the output directory
+            auto dirPath = settings.value("mjb_model_directory",
+                                          QDir::currentPath()).toString();
             auto dir = QDir(dirPath);
             auto fullPath = dir.filePath("mjmodel.mjb");
             qDebug() << QString("Attempting to save the model in MJB format to the following path: '%1'").arg(fullPath);
@@ -180,7 +179,8 @@ private:
 
         printModelAction = new QAction("Print Model", this);
         connect(printModelAction, &QAction::triggered, [this]() {
-            auto dirPath = QDir::currentPath();// to do: configure the output directory
+            auto dirPath = settings.value("print_model_directory",
+                                          QDir::currentPath()).toString();
             auto dir = QDir(dirPath);
             auto fullPath = dir.filePath("MJMODEL.TXT");
             muJoCoOpenGlWindow->printModel(fullPath);
@@ -188,7 +188,8 @@ private:
 
         printDataAction = new QAction("Print Data", this);
         connect(printDataAction, &QAction::triggered, [this]() {
-            auto dirPath = QDir::currentPath();// to do: configure the output directory
+            auto dirPath = settings.value("print_data_directory",
+                                          QDir::currentPath()).toString();
             auto dir = QDir(dirPath);
             auto fullPath = dir.filePath("MJDATA.TXT");
             muJoCoOpenGlWindow->printData(fullPath);
@@ -199,6 +200,12 @@ private:
             QApplication::quit();
         });
         quitAction->setShortcut(QKeySequence("Ctrl+Q"));
+
+        auto settingsAction = new QAction("Settings...", this);
+        connect(settingsAction, &QAction::triggered, [this]() {
+            SettingsDialog dialog(settings, this);
+            dialog.exec();
+        });
 
         auto *fileMenu = menuBar()->addMenu("&File");
         fileMenu->addAction(openAction);
@@ -212,13 +219,14 @@ private:
         fileMenu->addAction(printModelAction);
         fileMenu->addAction(printDataAction);
         fileMenu->addSeparator();
+        fileMenu->addAction(settingsAction);
+        fileMenu->addSeparator();
         fileMenu->addAction(quitAction);
 
 
         fileMenu->setStyleSheet("QMenu::item:disabled { background-color: #f0f0f0; color: #a0a0a0; }");
 
     }
-
 
     void makeSimulationMenu() {
         // Simulation menu
@@ -330,6 +338,9 @@ private:
 
     QAction *pauseAction;
     QAction *resetAction;
+
+
+    QSettings settings;
 };
 
 #endif //QMUJOCOSIM_MAINWINDOW_H

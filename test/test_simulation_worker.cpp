@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include "simulation_worker.hpp"
+#include "core/simulation_worker.hpp"
 #include "mujoco/mujoco.h"
 
 #ifndef EXAMPLE_XML_PATH
