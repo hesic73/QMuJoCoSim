@@ -14,7 +14,7 @@ TEST_CASE("Simulation worker", "[basic]") {
     mjData *d = mj_makeData(m);
     REQUIRE(d != nullptr);
 
-    SimulationWorker simulationWorker(m, d, 60);
+    SimulationWorker simulationWorker(m, d);
 
     std::thread simulationThread([&]() { simulationWorker.startSimulationLoop(); });
 

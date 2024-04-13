@@ -46,6 +46,9 @@ qt_add_executable(QMuJoCoSim
         src/custom_widgets/label_slider.hpp
         src/settings_dialog.hpp
         src/custom_widgets/directory_selector.hpp
+        src/core/profiler.hpp
+        src/utils.cpp
+        src/utils.h
 )
 
 qt_add_resources(QMuJoCoSim "resources" # This is an arbitrary identifier

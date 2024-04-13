@@ -48,12 +48,13 @@ cmake --build . --config Release
 - [ ] headlight control
 - [x] history buffer
 - [x] settings dialog
+- [x] profiler
 
 ## Known Issues
 
 - As we use `QOpenGLWindow` to embed MuJoCo, handling key press events is a bit tricky. Right now, almost all key presses are caught by the simulation window instead of the main window.
-
-- ~~Currently, the rendering operates at a constant FPS, based on the presumption that **simulation speed surpasses real-time**. Should this not be the case, the program could become overloaded.~~ Updated the simulation loop to mirror the approach used in MuJoCo's official simulation example.
+- ~~Currently, the rendering operates at a constant FPS, based on the presumption that **simulation speed surpasses real-time**. Should this not be the case, the program could become overloaded.~~ Updated the simulation loop to mirror the approach used in MuJoCo's official simulation example. However, rendering still occurs at a constant FPS.
+- When the simulation is paused, the thread halts until resumed, rather than continuously calling `mj_forward`.  Consequently, the profiler's CPU time measurement remains static during pauses, unlike in the official simulator.
 
 ## Reference
 

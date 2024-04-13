@@ -8,10 +8,12 @@
 #include <mutex>
 #include <condition_variable>
 #include <cassert>
+#include <functional>
 
-#include "mujoco/mujoco.h"
+#include <mujoco/mujoco.h>
 
 
+#include "utils.h"
 #include "history_buffer.hpp"
 
 
@@ -123,6 +125,7 @@ public:
     void setSimulationPaused(bool pause) {
         std::lock_guard<std::mutex> lockGuard(mtx);
         isSimulationPaused = pause;
+        std::cout << "Pause: " << pause << std::endl;
         if (!pause) {
             historyBuffer.setScrubIndex(0);
             cv_pause.notify_one();
@@ -266,6 +269,22 @@ public:
         historyBuffer.addToHistory(m, d);
     }
 
+    bool accessModelAndData(std::function<void(mjModel *m, mjData *d)> func) {
+        std::lock_guard<std::mutex> lockGuard(mtx);
+        if (m == nullptr || d == nullptr) {
+            return false;
+        }
+        func(m, d);
+        return true;
+    }
+
+    void clearDataTimers() {
+        std::lock_guard<std::mutex> lockGuard(mtx);
+        if (d == nullptr) {
+            return;
+        }
+        clearTimers(d);
+    }
 
 private:
     void cleanup() {

@@ -2,17 +2,17 @@
 #include <QCoreApplication>
 #include <QSurfaceFormat>
 #include <QColorSpace>
-#include "mainwindow.hpp"
 
-#include "mujoco/mujoco.h"
+#include <mujoco/mujoco.h>
+
+
 #include <iostream>
 
-static void check_mujoco_version() {
-    std::cout << "MuJoCo version " << mj_versionString() << std::endl;
-    if (mjVERSION_HEADER != mj_version()) {
-        mju_error("Headers and library have different versions");
-    }
-}
+
+#include "mainwindow.hpp"
+
+
+#include "utils.h"
 
 
 static void set_surface_format() {
@@ -34,6 +34,8 @@ static void set_surface_format() {
 int main(int argc, char *argv[]) {
     check_mujoco_version();
     set_surface_format();
+
+    install_mjcb_time();
 
     QCoreApplication::setApplicationName("QMuJoCoSim");
 

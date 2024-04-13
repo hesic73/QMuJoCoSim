@@ -50,7 +50,7 @@ public:
     resetWhenModelIsNotNull(int simulationHistoryBufferSize, std::function<void(int)> onHistorySliderValueChanged,
                             std::function<void()> onValueIsZeroAndKeyRightPressed) {
         labelSlider->setEnabled(true);
-        labelSlider->setValue(0);
+        labelSlider->setValueNoSignal(0);
         labelSlider->setRange(0, simulationHistoryBufferSize - 1);
 
 

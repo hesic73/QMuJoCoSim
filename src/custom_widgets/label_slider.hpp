@@ -36,7 +36,7 @@ public:
     void setRange(int minimum, int maximum) {
         m_minimum = minimum;
         m_maximum = maximum;
-        setValue(m_value); // Update the value to ensure it's within the new range
+        setValueNoSignal(m_value); // Update the value to ensure it's within the new range
     }
 
 

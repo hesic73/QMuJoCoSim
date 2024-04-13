@@ -24,7 +24,7 @@
 
 
 #include "core/simulation_worker.hpp"
-
+#include "core/profiler.hpp"
 
 inline mjtMouse get_mjtMouse(Qt::MouseButton dragButton, Qt::KeyboardModifiers modifiers) {
     if (dragButton == Qt::LeftButton && (modifiers & Qt::ShiftModifier)) {
@@ -50,7 +50,7 @@ Q_OBJECT
 
 public:
     /**
-     * All structs are trivially-copiable (although copying is a bit expensive).
+     * For now the rendering fps is fixed.
      */
     explicit MuJoCoOpenGLWindow(mjrContext con,
                                 int fps = 60)
@@ -65,9 +65,12 @@ public:
         mjv_makeScene(nullptr, &scn, MAX_GEOM); // Allocate scene
         std::copy(scn.flags, scn.flags + mjtRndFlag::mjNRNDFLAG, renderingEffects);
 
+        profiler.initialize();
+
         // Initialize the render timer
         renderTimer.setInterval(1000 / fps);
-        connect(&renderTimer, &QTimer::timeout, this, [this]() {
+        connect(&renderTimer, &QTimer::timeout, [this]() {
+            sync();
             update();
         });
         renderTimer.start();
@@ -222,6 +225,19 @@ public slots:
         simulationWorker.stepForward();
     }
 
+
+    void setShowProfiler(bool value) {
+        showProfiler = value;
+    }
+
+    void setPauseUpdate(bool value) {
+        pauseUpdate = value;
+    }
+
+    void setBusyWait(bool value) {
+        simulationWorker.setBusyWait(value);
+    }
+
 signals:
 
     void loadModelSuccess();
@@ -229,7 +245,7 @@ signals:
     void loadModelFailure(bool isNull);
 
 
-    void isPauseChanged(bool isPause);
+    void isPauseChanged(bool isPaused);
 
 protected:
     void initializeGL() override {
@@ -272,6 +288,7 @@ protected:
         simulationWorker.updateScene(&opt, &pert, &cam, &scn);
         mjr_render(viewport, &scn, &con);
 
+        // PAUSE
         if (simulationWorker.isPaused()) {
             QString s;
             if (simulationWorker.getHistoryBufferScrubIndex() == 0) {
@@ -284,6 +301,8 @@ protected:
                         &con);
         }
 
+
+        // real time (%)
         {
             float desiredRealtime = percentRealTime[slowdown_index];
             float actualRealtime = 100 / simulationWorker.getMeasuredSlowDown();
@@ -309,6 +328,11 @@ protected:
                 mjr_overlay(mjFONT_BIG, mjGRID_TOPLEFT, viewport, rtlabel, nullptr,
                             &con);
             }
+        }
+
+
+        if (showProfiler) {
+            profiler.show(&con, viewport);
         }
 
     }
@@ -362,8 +386,24 @@ protected:
     }
 
 private:
-    SimulationWorker simulationWorker;
 
+
+    void sync() {
+        bool update_profiler = showProfiler && (pauseUpdate || (!simulationWorker.isPaused()));
+
+        if (update_profiler) {
+            simulationWorker.accessModelAndData([this](mjModel *m, mjData *d) {
+                profiler.update(m, d);
+            });
+        }
+
+        simulationWorker.clearDataTimers();
+    }
+
+    SimulationWorker simulationWorker;
+    Profiler profiler;
+    bool showProfiler = false;
+    bool pauseUpdate = true; // update the profiler and the sensor even if the simulation is paused
 
     mjvCamera cam; // MuJoCo camera
     mjvOption opt; // Visualization options

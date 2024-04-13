@@ -58,7 +58,9 @@ public:
         setCentralWidget(widget);
 
 
+        // initialize menus
         makeFileMenu();
+        makeOptionMenu();
         makeSimulationMenu();
 
 
@@ -87,7 +89,7 @@ public:
             controlPanel->simulationSection->onKeyRightPressed();
         });
 
-        connect(muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::isPauseChanged, [this](bool isPause) {
+        connect(muJoCoOpenGlWindow, &MuJoCoOpenGLWindow::isPauseChanged, [this](bool isPaused) {
             controlPanel->simulationSection->setSliderValueNoSignal(0);
         });
 
@@ -228,6 +230,62 @@ private:
 
     }
 
+    void makeOptionMenu() {
+        auto *optionMenu = menuBar()->addMenu("&Option");
+        optionMenu->setStyleSheet("QMenu::item:disabled { background-color: #f0f0f0; color: #a0a0a0; }");
+
+
+//        auto helpAction = new QAction("&Help", this);
+//        optionMenu->addAction(helpAction);
+//        optionMenu->addSeparator();
+
+        profilerAction = new QAction("&Profiler", this);
+        profilerAction->setCheckable(true);
+        profilerAction->setChecked(false);
+        connect(profilerAction, &QAction::triggered, [this](bool checked) {
+            muJoCoOpenGlWindow->setShowProfiler(checked);
+        });
+        optionMenu->addAction(profilerAction);
+        optionMenu->addSeparator();
+
+
+        pauseUpdateAction = new QAction("Pause Update", this);
+        pauseUpdateAction->setCheckable(true);
+        pauseUpdateAction->setChecked(true);
+        connect(pauseUpdateAction, &QAction::triggered, [this](bool checked) {
+            muJoCoOpenGlWindow->setPauseUpdate(checked);
+        });
+        optionMenu->addAction(pauseUpdateAction);
+        optionMenu->addSeparator();
+
+
+        auto fullScreenAction = new QAction("&Full Screen", this);
+        fullScreenAction->setCheckable(true);
+        fullScreenAction->setChecked(false);
+        fullScreenAction->setShortcut(Qt::Key_F11);
+        connect(fullScreenAction, &QAction::triggered, [this](bool checked) {
+            if (checked) {
+                showFullScreen();
+            } else {
+                showNormal();
+            }
+        });
+        optionMenu->addAction(fullScreenAction);
+        optionMenu->addSeparator();
+
+
+        busyWaitAction = new QAction("Busy Wait", this);
+        busyWaitAction->setCheckable(true);
+        busyWaitAction->setChecked(false);
+        connect(busyWaitAction, &QAction::triggered, [this](bool checked) {
+            muJoCoOpenGlWindow->setBusyWait(checked);
+        });
+        optionMenu->addAction(busyWaitAction);
+        optionMenu->addSeparator();
+
+
+    }
+
     void makeSimulationMenu() {
         // Simulation menu
         auto *simulationMenu = menuBar()->addMenu("&Simulation");
@@ -288,6 +346,7 @@ private:
         controlPanel->renderingSection->show();
         controlPanel->simulationSection->resetWhenModelIsNotNull(muJoCoOpenGlWindow->getSimulationHistoryBufferSize(),
                                                                  [this](int value) {
+                                                                     pauseAction->setChecked(true);
                                                                      muJoCoOpenGlWindow->changeHistoryBufferScrubIndex(
                                                                              -value);
                                                                  }, [this]() {
@@ -305,6 +364,10 @@ private:
         printModelAction->setEnabled(false);
         printDataAction->setEnabled(false);
 
+        profilerAction->setEnabled(false);
+        pauseUpdateAction->setEnabled(false);
+        busyWaitAction->setEnabled(false);
+
         pauseAction->setEnabled(false);
         resetAction->setEnabled(false);
     }
@@ -318,6 +381,10 @@ private:
 
         printModelAction->setEnabled(true);
         printDataAction->setEnabled(true);
+
+        profilerAction->setEnabled(true);
+        pauseUpdateAction->setEnabled(true);
+        busyWaitAction->setEnabled(true);
 
         pauseAction->setEnabled(true);
         resetAction->setEnabled(true);
@@ -335,6 +402,10 @@ private:
 
     QAction *printModelAction;
     QAction *printDataAction;
+
+    QAction *profilerAction;
+    QAction *pauseUpdateAction;
+    QAction *busyWaitAction;
 
     QAction *pauseAction;
     QAction *resetAction;
